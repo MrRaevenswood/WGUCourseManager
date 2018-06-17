@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -53,9 +54,11 @@ public class termAddActivity extends AppCompatActivity {
                 String end = termEnd.getText().toString();
                 Term newTerm = new Term(title,start,end);
                 saveTerm(newTerm);
+                break;
             case R.id.cancel:
                 Intent returnToTermsView = new Intent(termAddActivity.this, TermsActivity.class);
                 startActivity(returnToTermsView);
+                break;
         }
 
         return true;
@@ -69,7 +72,10 @@ public class termAddActivity extends AppCompatActivity {
         values.put(DBConnHelper.TERM_START, newTerm.getStartDate());
         values.put(DBConnHelper.TERM_END, newTerm.getEndDate());
 
-        getContentResolver().insert(WGUProvider.CONTENT_URI, values);
+        getContentResolver().insert(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.TERMS_ID), values);
+
+        setResult(RESULT_OK);
+        finish();
 
     }
 

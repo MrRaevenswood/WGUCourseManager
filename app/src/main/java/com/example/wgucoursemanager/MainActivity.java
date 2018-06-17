@@ -8,10 +8,17 @@ import android.view.View;
 
 public class MainActivity extends AppCompatActivity {
 
+    private DBConnHelper appDataConn;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        appDataConn = new DBConnHelper(getApplicationContext());
+
+
+
     }
 
     public void openTermsWindow(View view) {

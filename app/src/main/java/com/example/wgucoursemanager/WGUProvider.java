@@ -9,6 +9,8 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.net.URI;
+
 public class WGUProvider extends ContentProvider {
 
     private static final String AUTHORITY = "com.example.wgucoursemanager.wguprovider";
@@ -16,12 +18,12 @@ public class WGUProvider extends ContentProvider {
     public  static final Uri CONTENT_URI =
             Uri.parse("content://" + AUTHORITY + "/" + BASE_PATH);
 
-    private static final int TERMS = 1;
-    private static final int TERMS_ID = 2;
-    private static final int COURSES = 3;
-    private static final int COURSE_ID = 4;
-    private static final int ASSESSMENTS = 5;
-    private static final int ASSESSMENTS_ID = 6;
+    public static final int TERMS = 1;
+    public static final int TERMS_ID = 2;
+    public static final int COURSES = 3;
+    public static final int COURSE_ID = 4;
+    public static final int ASSESSMENTS = 5;
+    public static final int ASSESSMENTS_ID = 6;
 
     private static final UriMatcher uriMatcher =
             new UriMatcher(UriMatcher.NO_MATCH);
@@ -31,12 +33,9 @@ public class WGUProvider extends ContentProvider {
     public static final String CONTENT_ITEM_ASSESSMENT = "Assessment";
 
     static {
-        uriMatcher.addURI(AUTHORITY, BASE_PATH, TERMS );
-        uriMatcher.addURI(AUTHORITY, BASE_PATH + "/#", TERMS_ID);
-        uriMatcher.addURI(AUTHORITY, BASE_PATH, COURSES);
-        uriMatcher.addURI(AUTHORITY, BASE_PATH + "/#", COURSE_ID);
-        uriMatcher.addURI(AUTHORITY, BASE_PATH, ASSESSMENTS);
-        uriMatcher.addURI(AUTHORITY, BASE_PATH + "/#", ASSESSMENTS_ID);
+        uriMatcher.addURI(AUTHORITY, BASE_PATH + "/" + TERMS_ID, TERMS_ID);
+        uriMatcher.addURI(AUTHORITY, BASE_PATH + "/" + COURSE_ID, COURSE_ID);
+        uriMatcher.addURI(AUTHORITY, BASE_PATH + "/" + ASSESSMENTS_ID, ASSESSMENTS_ID);
     }
 
     private SQLiteDatabase database;
@@ -81,6 +80,9 @@ public class WGUProvider extends ContentProvider {
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
 
         long id = 0;
+
+        System.out.println(uri);
+        System.out.println(uriMatcher.match(uri));
 
         switch(uriMatcher.match(uri)){
             case TERMS_ID:

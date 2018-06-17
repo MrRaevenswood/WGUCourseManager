@@ -12,7 +12,7 @@ public class DBConnHelper extends SQLiteOpenHelper{
 
     //Constants for identifying Term Table
     public static final String TABLE_TERMS = "terms";
-    public static final String TERM_ID = "termID";
+    public static final String TERM_ID = "_id";
     public static final String FK_COURSE_ID = "courseID";
     public static final String TERM_TITLE = "termTitle";
     public static final String TERM_START = "termStart";
@@ -23,7 +23,7 @@ public class DBConnHelper extends SQLiteOpenHelper{
 
     //Constants for identifying CourseTable
     public static final String TABLE_COURSES = "courses";
-    public static final String PK_COURSE_ID = "courseID";
+    public static final String PK_COURSE_ID = "_id";
     public static final String FK_Assessment_ID = "assessmentID";
     public static final String COURSE_TITLE = "courseTitle";
     public static final String COURSE_START = "courseStart";
@@ -41,7 +41,7 @@ public class DBConnHelper extends SQLiteOpenHelper{
 
     //Constants for identifying Assessments Table
     public static final String TABLE_ASSESSMENTS = "assessments";
-    public static final String PK_Assessment_ID = "assessmentID";
+    public static final String PK_Assessment_ID = "_id";
     public static final String ASSESSMENT_TITLE = "assessmentTitle";
     public static final String ASSESSMENT_ISOBJECTIVE = "isObjective";
     public static final String ASSESSMENT_ISPERFORMANCE = "isPerformance";
@@ -64,7 +64,7 @@ public class DBConnHelper extends SQLiteOpenHelper{
     private static final String CREATE_COURSES_TABLE =
             "CREATE TABLE " + TABLE_COURSES + " (" +
                     PK_COURSE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    FK_Assessment_ID + " INTEGER, " + "FOREIGN KEY(assessmentID) REFERENCES assessments(assessmentID), "+
+                    FK_Assessment_ID + " INTEGER REFERENCES assessments(assessmentID), "+
                     COURSE_TITLE + " TEXT, " +
                     COURSE_START + " TEXT, " +
                     COURSE_END + " TEXT, " +
@@ -78,13 +78,12 @@ public class DBConnHelper extends SQLiteOpenHelper{
     private static final String CREATE_TERM_TABLE =
             "CREATE TABLE " + TABLE_TERMS + " (" +
                     TERM_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    FK_COURSE_ID + " INTEGER, " + "FOREIGN KEY (courseID) REFERENCES courses(courseID), " +
+                    FK_COURSE_ID + " INTEGER REFERENCES courses(courseID), " +
                     TERM_TITLE + " TEXT, " +
                     TERM_START + " TEXT, " +
                     TERM_END + " TEXT" + ")";
 
     public DBConnHelper(Context context){ super(context, DATABASE_NAME, null, DATABASE_VERSION);}
-
 
     @Override
     public void onCreate(SQLiteDatabase db) {
