@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">WGU Course Manager</string>
+    <string name="assessments">Assessments</string>
+    <string name="terms">Terms</string>
+    <string name="courses">Courses</string>
+    <string name="title_activity_terms">Terms</string>
+    <string name="term">Term</string>
+    <string name="title_activity_courses">CoursesActivity</string>
+    <string name="course">Course</string>
+    <string name="title_activity_course">CourseActivity</string>
+    <string name="title_activity_assessments">AssessmentsActivity</string>
+    <string name="course_detail">Course Detail</string>
+    <string name="title_activity_term">Term</string>
+    <string name="term_details">Term Details</string>
+    <string name="title_activity_assessment">Assessment</string>
+    <string name="assessment_details">Assessment Details</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="click_here_to_select_date">Click here to select date...</string>
+    <string name="click_to_add_title_of_term">Click to Add Title of Term</string>
+    <string name="Add_Edit_Term">Add/Edit Term</string>
+</resources>

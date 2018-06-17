@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DBConnHelper extends SQLiteOpenHelper{
 
     //Constants for db name and version
-    private static final String DATABASE_NAME = "WGUCourseManager.db";
+    private static final String DATABASE_NAME = "wgucoursemanager.db";
     private static final int DATABASE_VERSION = 1;
 
     //Constants for identifying Term Table

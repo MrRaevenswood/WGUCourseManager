@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.wgucoursemanager">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".CourseActivity"
+            android:label="@string/title_activity_course"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.wgucoursemanager.MainActivity" />
+        </activity>
+        <activity
+            android:name=".TermsActivity"
+            android:label="@string/title_activity_terms"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.wgucoursemanager.MainActivity" />
+        </activity>
+        <activity
+            android:name=".AssessmentsActivity"
+            android:label="@string/title_activity_assessments"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.wgucoursemanager.MainActivity" />
+        </activity>
+        <activity
+            android:name=".Courses"
+            android:label="@string/title_activity_courses"
+            android:parentActivityName=".CourseActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.wgucoursemanager.CourseActivity" />
+        </activity>
+        <activity
+            android:name=".termAddActivity"
+            android:label="@string/title_activity_term"
+            android:parentActivityName=".TermsActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustPan">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.wgucoursemanager.TermsActivity" />
+        </activity>
+        <activity
+            android:name=".Assessment"
+            android:label="@string/title_activity_assessment"
+            android:parentActivityName=".AssessmentsActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.wgucoursemanager.AssessmentsActivity" />
+        </activity>
+        <activity android:name=".editActivity"></activity>
+    </application>
+
+</manifest>
