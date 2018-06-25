@@ -5,6 +5,8 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -52,7 +54,8 @@ public class termAddActivity extends AppCompatActivity {
                 String title = termTitle.getText().toString();
                 String start = termStart.getText().toString();
                 String end = termEnd.getText().toString();
-                Term newTerm = new Term(title,start,end);
+                String termRange = start + " - " + end;
+                Term newTerm = new Term(title,start,end,termRange);
                 saveTerm(newTerm);
                 break;
             case R.id.cancel:
@@ -71,8 +74,18 @@ public class termAddActivity extends AppCompatActivity {
         values.put(DBConnHelper.TERM_TITLE, newTerm.getTermTitle());
         values.put(DBConnHelper.TERM_START, newTerm.getStartDate());
         values.put(DBConnHelper.TERM_END, newTerm.getEndDate());
+        values.put(DBConnHelper.TERM_RANGE, newTerm.getTermRange());
 
         getContentResolver().insert(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.TERMS_ID), values);
+
+        Cursor cursor = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.TERMS_ID),
+                DBConnHelper.TERMS_ALL_COLUMNS, null, null, null);
+
+        while(cursor.moveToNext()){
+            System.out.println("The term title Inserted is: " + cursor.getString(cursor.getColumnIndex(DBConnHelper.TERM_TITLE)));
+            System.out.println("The term start Inserted is: " + cursor.getString(cursor.getColumnIndex(DBConnHelper.TERM_START)));
+            System.out.println("The term end Inserted is: " + cursor.getString(cursor.getColumnIndex(DBConnHelper.TERM_END)));
+        }
 
         setResult(RESULT_OK);
         finish();

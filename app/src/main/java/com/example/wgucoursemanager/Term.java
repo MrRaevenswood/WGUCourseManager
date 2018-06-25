@@ -7,6 +7,7 @@ public class Term {
     private String title;
     private String startDate;
     private String endDate;
+    private String termRange;
     private ArrayList<Courses> courses;
 
     public Term (String title, String startDate,
@@ -18,10 +19,11 @@ public class Term {
     }
 
     public Term (String title, String startDate,
-                 String endDate){
+                 String endDate, String termRange){
         this.setTitle(title);
         this.setStartDate(startDate);
         this.setEndDate(endDate);
+        this.setTermRange(termRange);
     }
 
     public String getTermTitle(){
@@ -58,5 +60,13 @@ public class Term {
 
     public void removeCourse(Courses course){
         courses.remove(course);
+    }
+
+    public void setTermRange(String termRange) {
+        this.termRange = termRange;
+    }
+
+    public String getTermRange(){
+        return this.termRange;
     }
 }

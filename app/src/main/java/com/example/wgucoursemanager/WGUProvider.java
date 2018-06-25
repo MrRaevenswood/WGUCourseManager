@@ -53,17 +53,14 @@ public class WGUProvider extends ContentProvider {
 
         switch (uriMatcher.match(uri)) {
             case TERMS_ID:
-                selection = DBConnHelper.TERM_ID + "=" + uri.getLastPathSegment();
                 return database.query(DBConnHelper.TABLE_TERMS, DBConnHelper.TERMS_ALL_COLUMNS,
-                        selection, null, null, null, DBConnHelper.TERM_START + " DESC");
+                        null, null, null, null, DBConnHelper.TERM_START + " DESC");
             case COURSE_ID:
-                selection = DBConnHelper.PK_COURSE_ID + "=" + uri.getLastPathSegment();
                 return database.query(DBConnHelper.TABLE_COURSES, DBConnHelper.COURSES_ALL_COLUMNS,
-                        selection, null, null, null, DBConnHelper.COURSE_START + " DESC");
+                        null, null, null, null, DBConnHelper.COURSE_START + " DESC");
             case ASSESSMENTS_ID:
-                selection = DBConnHelper.PK_Assessment_ID + "=" + uri.getLastPathSegment();
                 return database.query(DBConnHelper.TABLE_ASSESSMENTS, DBConnHelper.ASSESSMENTS_ALL_COLUMNS,
-                        selection, null, null, null, DBConnHelper.ASSESSMENT_GOAL_DATE + " DESC");
+                        null, null, null, null, DBConnHelper.ASSESSMENT_GOAL_DATE + " DESC");
         }
 
         return null;

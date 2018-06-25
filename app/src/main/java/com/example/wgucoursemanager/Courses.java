@@ -10,11 +10,11 @@ import android.view.View;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
-public class Courses extends AppCompatActivity {
+public class Courses {
 
     private String title;
-    private LocalDateTime startDate;
-    private LocalDateTime anticipatedEndDate;
+    private String startDate;
+    private String anticipatedEndDate;
     private String status;
     private String mentorName;
     private String mentorEmail;
@@ -22,34 +22,31 @@ public class Courses extends AppCompatActivity {
     private ArrayList<String> objectiveAssessment;
     private ArrayList<String> performanceAssessment;
     private String notes;
+    private String courseRange;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_courses);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    public Courses(String title, String start, String end, String status,
+                   String mentorName, String mentorEmail, String mentorPhone,
+                   String notes, String courseRange){
+        this.title = title;
+        this.startDate = start;
+        this.anticipatedEndDate = end;
+        this.status = status;
+        this.mentorName = mentorName;
+        this.mentorEmail = mentorEmail;
+        this.mentorPhone = mentorPhone;
+        this.notes = notes;
+        this.courseRange = courseRange;
     }
 
     public String getCourseTitle(){
         return this.title;
     }
 
-    public LocalDateTime getStartDate() {
+    public String getStartDate() {
         return startDate;
     }
 
-    public LocalDateTime getAnticipatedEndDate() {
+    public String getAnticipatedEndDate() {
         return anticipatedEndDate;
     }
 
@@ -85,11 +82,11 @@ public class Courses extends AppCompatActivity {
         this.title = title;
     }
 
-    public void setStartDate(LocalDateTime startDate) {
+    public void setStartDate(String startDate) {
         this.startDate = startDate;
     }
 
-    public void setAnticipatedEndDate(LocalDateTime anticipatedEndDate) {
+    public void setAnticipatedEndDate(String anticipatedEndDate) {
         this.anticipatedEndDate = anticipatedEndDate;
     }
 

@@ -8,17 +8,26 @@
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:theme="@style/AppTheme.AppBarOverlay">
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
+            android:layout_height="match_parent"
             android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
+            app:popupTheme="@style/AppTheme.PopupOverlay"
+            app:title="List of Terms" />
 
     </android.support.design.widget.AppBarLayout>
+
+    <ListView
+        android:id="@android:id/list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        app:layout_anchor="@id/toolbar"
+        app:layout_anchorGravity="bottom" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
@@ -29,11 +38,5 @@
         android:tint="@android:color/background_light"
         app:backgroundTint="@color/colorPrimary"
         app:srcCompat="@android:drawable/ic_input_add" />
-
-    <ListView
-        android:id="@+id/assignedTerms"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="56dp" />
 
 </android.support.design.widget.CoordinatorLayout>

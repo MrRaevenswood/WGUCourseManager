@@ -17,9 +17,10 @@ public class DBConnHelper extends SQLiteOpenHelper{
     public static final String TERM_TITLE = "termTitle";
     public static final String TERM_START = "termStart";
     public static final String TERM_END = "termEnd";
+    public static final String TERM_RANGE = "termRange";
 
     public static final String[] TERMS_ALL_COLUMNS =
-            {TERM_ID, FK_COURSE_ID, TERM_TITLE, TERM_START, TERM_END};
+            {TERM_ID, FK_COURSE_ID, TERM_TITLE, TERM_START, TERM_END, TERM_RANGE};
 
     //Constants for identifying CourseTable
     public static final String TABLE_COURSES = "courses";
@@ -33,6 +34,7 @@ public class DBConnHelper extends SQLiteOpenHelper{
     public static final String COURSE_MENTOR_EMAIL = "courseMentorEmail";
     public static final String COURSE_MENTOR_PHONE = "courseMentorPhone";
     public static final String COURSE_NOTES = "courseNotes";
+    public static final String COURSE_RANGE = "courseRange";
 
     public static final String[] COURSES_ALL_COLUMNS =
             {PK_COURSE_ID, FK_Assessment_ID, COURSE_TITLE, COURSE_START, COURSE_END,
@@ -72,7 +74,8 @@ public class DBConnHelper extends SQLiteOpenHelper{
                     COURSE_MENTOR_NAME + " TEXT, " +
                     COURSE_MENTOR_EMAIL + " TEXT, " +
                     COURSE_MENTOR_PHONE + " TEXT, " +
-                    COURSE_NOTES + " TEXT" + ")";
+                    COURSE_NOTES + " TEXT, " +
+                    COURSE_RANGE + " TEXT" + ")";
 
     //Create Term Table
     private static final String CREATE_TERM_TABLE =
@@ -81,7 +84,8 @@ public class DBConnHelper extends SQLiteOpenHelper{
                     FK_COURSE_ID + " INTEGER REFERENCES courses(courseID), " +
                     TERM_TITLE + " TEXT, " +
                     TERM_START + " TEXT, " +
-                    TERM_END + " TEXT" + ")";
+                    TERM_END + " TEXT," +
+                    TERM_RANGE + " TEXT" + ")";
 
     public DBConnHelper(Context context){ super(context, DATABASE_NAME, null, DATABASE_VERSION);}
 

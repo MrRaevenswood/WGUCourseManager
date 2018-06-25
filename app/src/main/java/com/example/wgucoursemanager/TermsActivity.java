@@ -1,7 +1,7 @@
 package com.example.wgucoursemanager;
 
+import android.app.ListActivity;
 import android.app.LoaderManager;
-import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
@@ -11,35 +11,34 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.CursorAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.SimpleCursorAdapter;
 
-
-
-public class TermsActivity extends AppCompatActivity
-implements LoaderManager.LoaderCallbacks<Cursor>{
+public class TermsActivity extends ListActivity
+    implements LoaderManager.LoaderCallbacks<Cursor>{
 
     private static final int ADD_TERM_CODE = 1000;
-    ListView termList;
-    private CursorAdapter termAdapter;
-    WGUProvider provider;
+    SimpleCursorAdapter termAdapter;
+    int[] toViews = {android.R.id.text1, android.R.id.text2};
+    private static final String[] PROJECTION = new String[] {
+            DBConnHelper.TERM_TITLE, DBConnHelper.TERM_RANGE
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_terms);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
-        termAdapter = new TermCursorAdapter(this, null);
-        termList = findViewById(R.id.assignedTerms);
-        termList.setAdapter(termAdapter);
+        termAdapter = new SimpleCursorAdapter(this,
+                android.R.layout.simple_list_item_2, null,
+                PROJECTION,toViews, 0);
 
+        setListAdapter(termAdapter);
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -51,7 +50,8 @@ implements LoaderManager.LoaderCallbacks<Cursor>{
                 startActivityForResult(openTermAdd, ADD_TERM_CODE);
             }
         });
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        getLoaderManager().initLoader(ADD_TERM_CODE,null,this);
     }
 
     @Override
@@ -61,66 +61,52 @@ implements LoaderManager.LoaderCallbacks<Cursor>{
     }
 
     @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+
+        switch(item.getItemId()){
+            case R.id.goToCourses:
+                Intent goToCourses = new Intent(TermsActivity.this, CourseActivity.class);
+                startActivity(goToCourses);
+                break;
+            case R.id.goToAssess:
+                Intent goToAssess = new Intent(TermsActivity.this, AssessmentsActivity.class);
+                startActivity(goToAssess);
+                break;
+            case R.id.closeApp:
+                System.exit(0);
+                break;
+        }
+
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         if(requestCode == ADD_TERM_CODE){
             if(resultCode == RESULT_OK){
-                System.out.println("READY!!!!!!!!");
-
-                restartLoader();
+                getLoaderManager().restartLoader(ADD_TERM_CODE, null, this);
             }
         }
     }
 
-    private void restartLoader() {
-        getLoaderManager().restartLoader(0,null, this);
-    }
-
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(this, WGUProvider.CONTENT_URI
-                , DBConnHelper.TERMS_ALL_COLUMNS
-            , null, null, null);
+        return new CursorLoader(this, Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.TERMS_ID),
+                PROJECTION, null, null, null );
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
 
-        data.moveToFirst();
-        termAdapter.changeCursor(data);
+        termAdapter.swapCursor(data);
+        termAdapter.notifyDataSetChanged();
+
+        synchronized (getListAdapter()){
+            getListAdapter().notifyAll();
+        }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        termAdapter.changeCursor(null);
+        termAdapter.swapCursor(null);
     }
-
-    private class TermCursorAdapter extends CursorAdapter{
-
-        public TermCursorAdapter(Context context, Cursor c) {
-            super(context, c);
-        }
-
-        @Override
-        public View newView(Context context, Cursor cursor, ViewGroup parent) {
-            return LayoutInflater.from(context).inflate(
-                    R.layout.activity_terms, parent,false
-            );
-        }
-
-        @Override
-        public void bindView(View view, Context context, Cursor cursor) {
-            String termText = cursor.getString(
-                    cursor.getColumnIndex(DBConnHelper.TERM_TITLE)
-            );
-
-            int position = termText.indexOf(10);
-            if(position != -1){
-                termText = termText.substring(0, position) + "...";
-            }
-            System.out.println("Term text is: " + termText);
-            TextView termView = view.findViewById(R.id.assignedTerms);
-            termView.setText(termText);
-        }
-    }
-
 }

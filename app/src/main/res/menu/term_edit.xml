@@ -3,16 +3,17 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/saveTerm"
-        android:icon="@drawable/ic_launcher_background"
+        android:id="@+id/goToCourses"
         android:orderInCategory="100"
-        android:title="@string/save"
-        app:showAsAction="always" />
+        android:title="@string/go_to_your_courses" />
     <item
-        android:id="@+id/cancelTerm"
-        android:icon="@drawable/ic_launcher_background"
+        android:id="@+id/goToAssess"
         android:orderInCategory="100"
-        app:showAsAction="always"
-        android:title="@string/cancel" />
+        android:title="@string/go_to_your_assessments" />
+
+    <item
+        android:id="@+id/closeApp"
+        android:orderInCategory="100"
+        android:title="@string/close_app" />
 
 </menu>

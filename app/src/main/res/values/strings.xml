@@ -19,4 +19,7 @@
     <string name="click_here_to_select_date">Click here to select date...</string>
     <string name="click_to_add_title_of_term">Click to Add Title of Term</string>
     <string name="Add_Edit_Term">Add/Edit Term</string>
+    <string name="go_to_your_courses">Go To Your Courses</string>
+    <string name="go_to_your_assessments">Go To Your Assessments</string>
+    <string name="close_app">Close App</string>
 </resources>
