@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
+import java.lang.reflect.Array;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
@@ -19,10 +20,35 @@ public class Courses {
     private String mentorName;
     private String mentorEmail;
     private String mentorPhone;
-    private ArrayList<String> objectiveAssessment;
-    private ArrayList<String> performanceAssessment;
+    private ArrayList<Assessment> objectiveAssessment;
+    private ArrayList<Assessment> performanceAssessment;
     private String notes;
     private String courseRange;
+
+    public Courses(String title, String start, String end, String status,
+                   String mentorName, String mentorEmail, String mentorPhone,
+                   String notes, String courseRange,
+                   ArrayList<Assessment> testList){
+        this.title = title;
+        this.startDate = start;
+        this.anticipatedEndDate = end;
+        this.status = status;
+        this.mentorName = mentorName;
+        this.mentorEmail = mentorEmail;
+        this.mentorPhone = mentorPhone;
+        this.notes = notes;
+        this.courseRange = courseRange;
+
+        for(Assessment test : testList){
+            if(test.getIsObjective()){
+                objectiveAssessment.add(test);
+            }else if(test.getIsPerformance()){
+                performanceAssessment.add(test);
+            }
+        }
+
+
+    }
 
     public Courses(String title, String start, String end, String status,
                    String mentorName, String mentorEmail, String mentorPhone,
@@ -66,11 +92,11 @@ public class Courses {
         return mentorPhone;
     }
 
-    public ArrayList<String> getObjectiveAssessment() {
+    public ArrayList<Assessment> getObjectiveAssessment() {
         return objectiveAssessment;
     }
 
-    public ArrayList<String> getPerformanceAssessment() {
+    public ArrayList<Assessment> getPerformanceAssessment() {
         return performanceAssessment;
     }
 
