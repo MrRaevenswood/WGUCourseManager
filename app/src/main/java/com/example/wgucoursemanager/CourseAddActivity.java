@@ -12,7 +12,14 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class CourseAddActivity extends AppCompatActivity{
 
@@ -76,7 +83,10 @@ public class CourseAddActivity extends AppCompatActivity{
 
     }
 
-    private Courses buildCourse() {
+    private Courses buildCourse() throws ParseException {
+
+        Assessment selectedAssessment;
+
         String title = courseTitle.getText().toString();
         String start = courseStart.getText().toString();
         String end = courseEnd.getText().toString();
@@ -92,22 +102,61 @@ public class CourseAddActivity extends AppCompatActivity{
 
 
         if(!selectedObjectiveAssessment.isEmpty()){
-            ArrayList<Assessment> objectiveAssessmentsContainer = new ArrayList<>();
-            objectiveAssessmentsContainer.add()
+            selectedAssessment = getAssessmentFromSelected(
+                    objectiveAssessments.getSelectedItemPosition(), true);
 
+            ArrayList<Assessment> objectiveAssessmentsContainer = new ArrayList<>();
+            objectiveAssessmentsContainer.add(selectedAssessment);
+        }else{
+
+            selectedAssessment = getAssessmentFromSelected(
+                    objectiveAssessments.getSelectedItemPosition(), false);
+            ArrayList<Assessment> performanceAssessmentContainer = new ArrayList<>();
+            performanceAssessmentContainer.add(selectedAssessment);
         }
 
         return new Courses(title, start, end, statusString, mentorN, mentorE, mentorP,
                 notesTaken, start + " - " + end);
     }
 
-    private Assessment getAssessmentFromSelected(long position){
+    private Assessment getAssessmentFromSelected(long position, Boolean isObjective) throws ParseException {
 
-        Cursor allCurrentAssessments
-            = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_ID),
-                null, null, null, null);
+        Cursor allCurrentAssessments;
+
+        if(isObjective){
+           allCurrentAssessments  = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_ID),
+                    null, "Where isObjective = True", null, null);
+        }else{
+           allCurrentAssessments  = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_ID),
+                   null, "Where isPerformance = True", null, null);
+        }
 
 
+        allCurrentAssessments.moveToFirst();
+
+        while(position > 0){
+            allCurrentAssessments.moveToNext();
+            position -= 1;
+        }
+
+        String selectedTitle = allCurrentAssessments.getString(
+                allCurrentAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_TITLE));
+
+        Boolean selectedIsObjective = Boolean.parseBoolean(allCurrentAssessments.getString(
+                allCurrentAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_ISOBJECTIVE)));
+
+        Boolean selectedIsPerformance = Boolean.parseBoolean(allCurrentAssessments.getString(
+                allCurrentAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_ISPERFORMANCE)));
+
+        String selectedGoalDate = allCurrentAssessments.getString(
+                allCurrentAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_GOAL_DATE));
+
+        SimpleDateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
+        Date newselectedGoalDate = df.parse(selectedGoalDate);
+
+
+        return new Assessment(selectedTitle, selectedIsObjective,
+                selectedIsPerformance, newselectedGoalDate);
 
     }
 }

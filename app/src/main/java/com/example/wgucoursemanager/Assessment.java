@@ -8,30 +8,23 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
-public class Assessment extends AppCompatActivity {
+public class Assessment{
 
     private String title;
     private Boolean isObjective;
     private Boolean isPerformance;
-    private LocalDateTime goalDate;
+    private Date goalDate;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_assessment);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+    public Assessment(String title, Boolean isObjective,
+                      Boolean isPerformance, Date goalDate){
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        this.title = title;
+        this.isObjective = isObjective;
+        this.isPerformance = isPerformance;
+        this.goalDate = goalDate;
+
     }
 
     public String getAssessmentTitle(){

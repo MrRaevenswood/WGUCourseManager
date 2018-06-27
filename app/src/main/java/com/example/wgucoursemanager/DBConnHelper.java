@@ -60,7 +60,7 @@ public class DBConnHelper extends SQLiteOpenHelper{
                     ASSESSMENT_TITLE + " TEXT, " +
                     ASSESSMENT_ISOBJECTIVE + " INTEGER, " +
                     ASSESSMENT_ISPERFORMANCE + " INTEGER, " +
-                    ASSESSMENT_GOAL_DATE + " TEXT" + ")";
+                    ASSESSMENT_GOAL_DATE + " DATETIME" + ")";
 
     //Create Course Table
     private static final String CREATE_COURSES_TABLE =
