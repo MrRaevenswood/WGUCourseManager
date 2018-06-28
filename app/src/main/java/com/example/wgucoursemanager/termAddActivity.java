@@ -37,8 +37,6 @@ public class termAddActivity extends AppCompatActivity {
         toolbar.setTitle(R.string.Add_Edit_Term);
         setSupportActionBar(toolbar);
 
-
-
     }
 
     @Override

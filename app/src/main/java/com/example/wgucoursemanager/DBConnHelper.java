@@ -25,7 +25,7 @@ public class DBConnHelper extends SQLiteOpenHelper{
     //Constants for identifying CourseTable
     public static final String TABLE_COURSES = "courses";
     public static final String PK_COURSE_ID = "_id";
-    public static final String FK_Assessment_ID = "assessmentID";
+    //public static final String FK_Assessment_ID = "assessmentID";
     public static final String COURSE_TITLE = "courseTitle";
     public static final String COURSE_START = "courseStart";
     public static final String COURSE_END = "courseEnd";
@@ -37,7 +37,7 @@ public class DBConnHelper extends SQLiteOpenHelper{
     public static final String COURSE_RANGE = "courseRange";
 
     public static final String[] COURSES_ALL_COLUMNS =
-            {PK_COURSE_ID, FK_Assessment_ID, COURSE_TITLE, COURSE_START, COURSE_END,
+            {PK_COURSE_ID/*, FK_Assessment_ID*/, COURSE_TITLE, COURSE_START, COURSE_END,
              COURSE_STATUS, COURSE_MENTOR_NAME, COURSE_MENTOR_EMAIL, COURSE_MENTOR_PHONE,
              COURSE_NOTES};
 
@@ -66,7 +66,7 @@ public class DBConnHelper extends SQLiteOpenHelper{
     private static final String CREATE_COURSES_TABLE =
             "CREATE TABLE " + TABLE_COURSES + " (" +
                     PK_COURSE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    FK_Assessment_ID + " INTEGER REFERENCES assessments(assessmentID), "+
+                    //FK_Assessment_ID + " INTEGER REFERENCES assessments(assessmentID), "+
                     COURSE_TITLE + " TEXT, " +
                     COURSE_START + " TEXT, " +
                     COURSE_END + " TEXT, " +

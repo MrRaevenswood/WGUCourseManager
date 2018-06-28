@@ -11,13 +11,8 @@ import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
-
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -78,8 +73,18 @@ public class CourseAddActivity extends AppCompatActivity{
         values.put(DBConnHelper.COURSE_MENTOR_PHONE, newCourse.getMentorPhone());
         values.put(DBConnHelper.COURSE_NOTES, newCourse.getNotes());
 
-        if(!newCourse.getObjectiveAssessment().isEmpty())
-            values.put()
+
+        getContentResolver().insert(Uri.parse(WGUProvider.CONTENT_URI + "/" +
+            WGUProvider.COURSE_ID), values);
+
+        if(!newCourse.getObjectiveAssessment().isEmpty()
+                && newCourse.getPerformanceAssessment().isEmpty()){
+
+            for(Assessment A : newCourse.getObjectiveAssessment()){
+                values.put(DBConnHelper.FK_Assessment_ID, )
+            }
+
+        }
 
     }
 
@@ -99,24 +104,31 @@ public class CourseAddActivity extends AppCompatActivity{
         ArrayList<String> selectedPerformanceAssessments = new ArrayList<>();
             selectedPerformanceAssessments.add(performanceAssessements.getSelectedItem().toString());
         String notesTaken = notes.getText().toString();
+        ArrayList<Assessment> assessmentsContainer = new ArrayList<>();
 
 
         if(!selectedObjectiveAssessment.isEmpty()){
             selectedAssessment = getAssessmentFromSelected(
                     objectiveAssessments.getSelectedItemPosition(), true);
 
-            ArrayList<Assessment> objectiveAssessmentsContainer = new ArrayList<>();
-            objectiveAssessmentsContainer.add(selectedAssessment);
+            assessmentsContainer.add(selectedAssessment);
         }else{
 
             selectedAssessment = getAssessmentFromSelected(
-                    objectiveAssessments.getSelectedItemPosition(), false);
-            ArrayList<Assessment> performanceAssessmentContainer = new ArrayList<>();
-            performanceAssessmentContainer.add(selectedAssessment);
+                    performanceAssessements.getSelectedItemPosition(), false);
+
+            assessmentsContainer.add(selectedAssessment);
         }
 
-        return new Courses(title, start, end, statusString, mentorN, mentorE, mentorP,
-                notesTaken, start + " - " + end);
+        if(assessmentsContainer.isEmpty()){
+            return new Courses(title, start, end, statusString, mentorN, mentorE, mentorP,
+                    notesTaken, start + " - " + end);
+        }else{
+            return new Courses(title, start, end, statusString, mentorN, mentorE, mentorP,
+                    notesTaken, start + " - " + end, assessmentsContainer);
+        }
+
+
     }
 
     private Assessment getAssessmentFromSelected(long position, Boolean isObjective) throws ParseException {
