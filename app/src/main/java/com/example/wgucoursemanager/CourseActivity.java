@@ -25,7 +25,6 @@ public class CourseActivity extends ListActivity
             DBConnHelper.COURSE_TITLE, DBConnHelper.COURSE_RANGE
     };
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

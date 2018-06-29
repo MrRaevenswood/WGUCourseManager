@@ -16,11 +16,10 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
+            app:popupTheme="@style/AppTheme.PopupOverlay"
+            app:title="List of Courses" />
 
     </android.support.design.widget.AppBarLayout>
-
-    <include layout="@layout/content_course" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
@@ -31,5 +30,11 @@
         android:tint="@android:color/background_light"
         app:backgroundTint="@color/colorPrimary"
         app:srcCompat="@android:drawable/ic_input_add" />
+
+    <ListView
+        android:id="@android:id/list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="57dp" />
 
 </android.support.design.widget.CoordinatorLayout>

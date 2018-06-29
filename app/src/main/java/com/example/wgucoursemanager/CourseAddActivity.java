@@ -1,5 +1,8 @@
 package com.example.wgucoursemanager;
 
+import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
@@ -8,12 +11,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 public class CourseAddActivity extends AppCompatActivity{
@@ -21,7 +26,7 @@ public class CourseAddActivity extends AppCompatActivity{
     private static TextView courseTitle;
     private static TextView courseStart;
     private static TextView courseEnd;
-    private static Spinner status;
+    private static TextView status;
     private static TextView mentorName;
     private static TextView mentorEmail;
     private static TextView mentorPhone;
@@ -32,12 +37,18 @@ public class CourseAddActivity extends AppCompatActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_course_edit);
+        setContentView(R.layout.activity_course_add);
 
         courseTitle = findViewById(R.id.courseTitle);
         courseStart = findViewById(R.id.courseStartDate);
         courseEnd = findViewById(R.id.courseEndDate);
-        status = findViewById(R.id.statusSpinner);
+        status = findViewById(R.id.status);
+        mentorName = findViewById(R.id.mentorName);
+        mentorEmail = findViewById(R.id.mentorEmail);
+        mentorPhone = findViewById(R.id.mentorPhone);
+        objectiveAssessments = findViewById(R.id.objectiveAssessments);
+        performanceAssessements = findViewById(R.id.performanceAssessments);
+        notes = findViewById(R.id.notes);
 
         Toolbar toolbar = findViewById(R.id.addCourseToolBar);
         toolbar.setTitle("Add/Edit Course");
@@ -54,7 +65,11 @@ public class CourseAddActivity extends AppCompatActivity{
     public boolean onOptionsItemSelected(MenuItem item){
         switch (item.getItemId()){
             case R.id.save:
-                saveCourse(buildCourse());
+                try {
+                    saveCourse(buildCourse());
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
                 break;
 
         }
@@ -74,18 +89,38 @@ public class CourseAddActivity extends AppCompatActivity{
         values.put(DBConnHelper.COURSE_NOTES, newCourse.getNotes());
 
 
-        getContentResolver().insert(Uri.parse(WGUProvider.CONTENT_URI + "/" +
-            WGUProvider.COURSE_ID), values);
-
         if(!newCourse.getObjectiveAssessment().isEmpty()
                 && newCourse.getPerformanceAssessment().isEmpty()){
 
             for(Assessment A : newCourse.getObjectiveAssessment()){
-                values.put(DBConnHelper.FK_Assessment_ID, )
+
+                values.put(DBConnHelper.FK_Assessment_ID,getAssessmentKey(A.getAssessmentTitle()));
+
+            }
+
+        }else if(newCourse.getObjectiveAssessment().isEmpty()
+                && !newCourse.getPerformanceAssessment().isEmpty()){
+
+            for(Assessment A : newCourse.getPerformanceAssessment()){
+                values.put(DBConnHelper.FK_Assessment_ID, getAssessmentKey(A.getAssessmentTitle()));
             }
 
         }
 
+        getContentResolver().insert(Uri.parse(WGUProvider.CONTENT_URI + "/" +
+                WGUProvider.COURSE_ID), values);
+
+
+    }
+
+    private Integer getAssessmentKey(String assessmentTitle) {
+
+        Cursor assessmentKey = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_ID),
+                new String[]{DBConnHelper.PK_Assessment_ID}, "Where " + DBConnHelper.ASSESSMENT_TITLE + "= " + assessmentTitle,
+                null, null);
+        assessmentKey.moveToFirst();
+
+        return assessmentKey.getInt(0);
     }
 
     private Courses buildCourse() throws ParseException {
@@ -171,4 +206,60 @@ public class CourseAddActivity extends AppCompatActivity{
                 selectedIsPerformance, newselectedGoalDate);
 
     }
+
+    public void showStartDatePickerDialog(View view){
+        Bundle startBundle = new Bundle();
+        startBundle.putString("startDate","startDate");
+        DatePicker startDatePicker = new DatePicker();
+        startDatePicker.setArguments(startBundle);
+
+        startDatePicker.show(getFragmentManager(), "datePicker");
+    }
+
+    public void showEndDatePickerDialog(View view) {
+        Bundle endBundle = new Bundle();
+        endBundle.putString("endDate", "endDate");
+
+        DatePicker endDatePicker = new DatePicker();
+        endDatePicker.setArguments(endBundle);
+
+        endDatePicker.show(getFragmentManager(), "datePicker");
+    }
+
+    public static class DatePicker extends DialogFragment
+            implements DatePickerDialog.OnDateSetListener {
+
+        public int year;
+        public int month;
+        public int day;
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            // Use the current date as the default date in the picker
+            final Calendar c = Calendar.getInstance();
+            year = c.get(Calendar.YEAR);
+            month = c.get(Calendar.MONTH);
+            day = c.get(Calendar.DAY_OF_MONTH);
+
+            // Create a new instance of DatePickerDialog and return it
+            return new DatePickerDialog(getActivity(), this, year, month, day);
+        }
+
+        @Override
+        public void onDateSet(android.widget.DatePicker view, int year, int month, int dayOfMonth) {
+
+            if(this.getArguments().containsKey("startDate")){
+                courseStart.setText(String.valueOf(month) + "/" + String.valueOf(dayOfMonth) + "/"
+                        + String.valueOf(year));
+            }else if(this.getArguments().containsKey("endDate")){
+                courseEnd.setText(String.valueOf(month) + "/" + String.valueOf(dayOfMonth) + "/"
+                        + String.valueOf(year));
+            };
+
+        }
+
+    }
+
+}
+
 }
