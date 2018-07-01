@@ -70,6 +70,8 @@ public class CourseActivity extends ListActivity
                 startActivity(goToTerms);
                 break;
         }
+
+        return false;
    }
 
    @Override

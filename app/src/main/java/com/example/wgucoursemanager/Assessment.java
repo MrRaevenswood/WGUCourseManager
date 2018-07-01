@@ -1,13 +1,5 @@
 package com.example.wgucoursemanager;
 
-import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.view.View;
-
-import java.time.LocalDateTime;
 import java.util.Date;
 
 public class Assessment{
@@ -39,7 +31,7 @@ public class Assessment{
         return isPerformance;
     }
 
-    public LocalDateTime getGoalDate() {
+    public Date getGoalDate() {
         return goalDate;
     }
 
@@ -55,11 +47,11 @@ public class Assessment{
         this.isPerformance = isPerformance;
     }
 
-    public void setGoalDate(LocalDateTime goalDate){
+    public void setGoalDate(Date goalDate){
         this.goalDate = goalDate;
     }
 
-    public void setAlert(LocalDateTime goalDate){
+    public void setAlert(Date goalDate){
 
     }
 }

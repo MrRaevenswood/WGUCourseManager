@@ -77,6 +77,7 @@ public class TermsActivity extends ListActivity
                 break;
         }
 
+        return false;
     }
 
     @Override

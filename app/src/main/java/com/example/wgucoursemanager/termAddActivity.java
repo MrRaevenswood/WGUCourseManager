@@ -1,9 +1,11 @@
 package com.example.wgucoursemanager;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -13,6 +15,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.support.v7.widget.Toolbar;
 
@@ -75,15 +78,6 @@ public class termAddActivity extends AppCompatActivity {
         values.put(DBConnHelper.TERM_RANGE, newTerm.getTermRange());
 
         getContentResolver().insert(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.TERMS_ID), values);
-
-        Cursor cursor = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.TERMS_ID),
-                DBConnHelper.TERMS_ALL_COLUMNS, null, null, null);
-
-        while(cursor.moveToNext()){
-            System.out.println("The term title Inserted is: " + cursor.getString(cursor.getColumnIndex(DBConnHelper.TERM_TITLE)));
-            System.out.println("The term start Inserted is: " + cursor.getString(cursor.getColumnIndex(DBConnHelper.TERM_START)));
-            System.out.println("The term end Inserted is: " + cursor.getString(cursor.getColumnIndex(DBConnHelper.TERM_END)));
-        }
 
         setResult(RESULT_OK);
         finish();

@@ -1,20 +1,26 @@
 package com.example.wgucoursemanager;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.R.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -30,8 +36,6 @@ public class CourseAddActivity extends AppCompatActivity{
     private static TextView mentorName;
     private static TextView mentorEmail;
     private static TextView mentorPhone;
-    private static ListView objectiveAssessments;
-    private static ListView performanceAssessements;
     private static TextView notes;
 
     @Override
@@ -46,8 +50,6 @@ public class CourseAddActivity extends AppCompatActivity{
         mentorName = findViewById(R.id.mentorName);
         mentorEmail = findViewById(R.id.mentorEmail);
         mentorPhone = findViewById(R.id.mentorPhone);
-        objectiveAssessments = findViewById(R.id.objectiveAssessments);
-        performanceAssessements = findViewById(R.id.performanceAssessments);
         notes = findViewById(R.id.notes);
 
         Toolbar toolbar = findViewById(R.id.addCourseToolBar);
@@ -65,14 +67,12 @@ public class CourseAddActivity extends AppCompatActivity{
     public boolean onOptionsItemSelected(MenuItem item){
         switch (item.getItemId()){
             case R.id.save:
-                try {
-                    saveCourse(buildCourse());
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
+                    promptToAddAssessments();
                 break;
 
         }
+
+        return false;
     }
 
     private void saveCourse(Courses newCourse) {
@@ -87,6 +87,7 @@ public class CourseAddActivity extends AppCompatActivity{
         values.put(DBConnHelper.COURSE_MENTOR_EMAIL, newCourse.getMentorEmail());
         values.put(DBConnHelper.COURSE_MENTOR_PHONE, newCourse.getMentorPhone());
         values.put(DBConnHelper.COURSE_NOTES, newCourse.getNotes());
+
 
 
         if(!newCourse.getObjectiveAssessment().isEmpty()
@@ -107,10 +108,115 @@ public class CourseAddActivity extends AppCompatActivity{
 
         }
 
+
+
         getContentResolver().insert(Uri.parse(WGUProvider.CONTENT_URI + "/" +
                 WGUProvider.COURSE_ID), values);
+        setResult(RESULT_OK);
+        finish();
 
+    }
 
+    private void promptToAddAssessments() {
+
+        AlertDialog.Builder addAssessment = new AlertDialog.Builder(this);
+        addAssessment.setTitle("Add Objective/Performance Assessments?");
+
+        final RadioButton yesOption = new RadioButton(this);
+        final RadioButton noOption = new RadioButton(this);
+
+        addAssessment.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                if(yesOption.isChecked()){
+                    Cursor allCurrentAssessments = getAllCurrentAssessments();
+                    SimpleDateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
+                    if(allCurrentAssessments.moveToFirst()){
+                        openAssessmentDialog();
+                    }
+                }
+
+            }
+        });
+
+        addAssessment.create().show();
+    }
+
+    private void openAssessmentDialog() {
+
+        ArrayAdapter<String> objectiveAssessmentTitles = new ArrayAdapter<>(this, R.layout.custom_dropdown_dialog);
+        ArrayAdapter<String> performanceAssessmentTitles = new ArrayAdapter<>(this, R.layout.custom_dropdown_dialog );
+
+        AlertDialog.Builder populateAssessments = new AlertDialog.Builder(this);
+        populateAssessments.setTitle("Choose your one objective or performance of Both");
+
+        Cursor assignmentsToPopulate = getAllCurrentAssessments();
+        while(assignmentsToPopulate.moveToNext()){
+
+            String currentTitle = assignmentsToPopulate.getString(
+                    assignmentsToPopulate.getColumnIndex(DBConnHelper.ASSESSMENT_TITLE)
+            );
+
+            String isPerformance = assignmentsToPopulate.getString(
+                    assignmentsToPopulate.getColumnIndex(DBConnHelper.ASSESSMENT_ISPERFORMANCE)).
+                    toLowerCase();
+
+            if(isPerformance.equals("true")){
+
+                performanceAssessmentTitles.add(currentTitle);
+
+            }else if(isPerformance.equals("false")){
+
+                objectiveAssessmentTitles.add(currentTitle);
+            }
+
+        }
+
+        populateAssessments.setView(LayoutInflater.from(getApplicationContext()).inflate(R.layout.custom_dropdown_dialog, null));
+        final Spinner objectiveSpinner = findViewById(R.id.objectiveSpinner);
+        objectiveSpinner.setAdapter(objectiveAssessmentTitles);
+        final Spinner performanceSpinner = findViewById(R.id.performanceSpinner);
+        performanceSpinner.setAdapter(performanceAssessmentTitles);
+
+        populateAssessments.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                ArrayList<String> assessmentContainer = new ArrayList<>();
+                ArrayList<Integer> assessmentKeys = new ArrayList<>();
+
+                if(!(objectiveSpinner.getSelectedItem() == null))
+                   assessmentContainer.add(objectiveSpinner.getSelectedItem().toString());
+                if(!(performanceSpinner.getSelectedItem() == null))
+                    assessmentContainer.add(performanceSpinner.getSelectedItem().toString());
+
+                for (String assessment : assessmentContainer){
+                    assessmentKeys.add(getAssessmentKey(assessment));
+                }
+
+                try {
+                    saveCourse(buildCourse(assessmentKeys));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
+
+        populateAssessments.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialogInterface) {
+
+            }
+        });
+
+        populateAssessments.create().show();
+
+}
+
+    public Cursor getAllCurrentAssessments(){
+        return getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_ID),
+                new String[]{DBConnHelper.PK_Assessment_ID, DBConnHelper.ASSESSMENT_TITLE, DBConnHelper.ASSESSMENT_ISOBJECTIVE, DBConnHelper.ASSESSMENT_ISPERFORMANCE},
+                null, null, null);
     }
 
     private Integer getAssessmentKey(String assessmentTitle) {
@@ -123,88 +229,59 @@ public class CourseAddActivity extends AppCompatActivity{
         return assessmentKey.getInt(0);
     }
 
-    private Courses buildCourse() throws ParseException {
-
-        Assessment selectedAssessment;
+    private Courses buildCourse(ArrayList<Integer> assessments) throws ParseException {
 
         String title = courseTitle.getText().toString();
         String start = courseStart.getText().toString();
         String end = courseEnd.getText().toString();
-        String statusString = status.getSelectedItem().toString();
+        String statusString = status.getText().toString();
         String mentorN = mentorName.getText().toString();
         String mentorE = mentorEmail.getText().toString();
         String mentorP = mentorPhone.getText().toString();
-        ArrayList<String> selectedObjectiveAssessment = new ArrayList<>();
-            selectedObjectiveAssessment.add(objectiveAssessments.getSelectedItem().toString());
-        ArrayList<String> selectedPerformanceAssessments = new ArrayList<>();
-            selectedPerformanceAssessments.add(performanceAssessements.getSelectedItem().toString());
         String notesTaken = notes.getText().toString();
-        ArrayList<Assessment> assessmentsContainer = new ArrayList<>();
+        ArrayList<Assessment> allCurrentAssessmentsForCourse = new ArrayList<>();
 
-
-        if(!selectedObjectiveAssessment.isEmpty()){
-            selectedAssessment = getAssessmentFromSelected(
-                    objectiveAssessments.getSelectedItemPosition(), true);
-
-            assessmentsContainer.add(selectedAssessment);
-        }else{
-
-            selectedAssessment = getAssessmentFromSelected(
-                    performanceAssessements.getSelectedItemPosition(), false);
-
-            assessmentsContainer.add(selectedAssessment);
+        for(Integer i : assessments){
+            allCurrentAssessmentsForCourse.add(getAssessmentFromSelected(i));
         }
 
-        if(assessmentsContainer.isEmpty()){
+        if(assessments.isEmpty()){
             return new Courses(title, start, end, statusString, mentorN, mentorE, mentorP,
                     notesTaken, start + " - " + end);
         }else{
             return new Courses(title, start, end, statusString, mentorN, mentorE, mentorP,
-                    notesTaken, start + " - " + end, assessmentsContainer);
+                    notesTaken, start + " - " + end, allCurrentAssessmentsForCourse);
         }
 
 
     }
-
-    private Assessment getAssessmentFromSelected(long position, Boolean isObjective) throws ParseException {
+    private Assessment getAssessmentFromSelected(long position) throws ParseException {
 
         Cursor allCurrentAssessments;
-
-        if(isObjective){
-           allCurrentAssessments  = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_ID),
-                    null, "Where isObjective = True", null, null);
-        }else{
-           allCurrentAssessments  = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_ID),
-                   null, "Where isPerformance = True", null, null);
-        }
-
+        String selectedTitle, selectedGoalDate;
+        Boolean selectedIsObjective, selectedIsPerformance;
+        allCurrentAssessments  = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_ID),
+                   null, "Where " + DBConnHelper.PK_Assessment_ID + " = " + position, null, null);
 
         allCurrentAssessments.moveToFirst();
 
-        while(position > 0){
-            allCurrentAssessments.moveToNext();
-            position -= 1;
-        }
-
-        String selectedTitle = allCurrentAssessments.getString(
+        selectedTitle = allCurrentAssessments.getString(
                 allCurrentAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_TITLE));
 
-        Boolean selectedIsObjective = Boolean.parseBoolean(allCurrentAssessments.getString(
+        selectedIsObjective = Boolean.parseBoolean(allCurrentAssessments.getString(
                 allCurrentAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_ISOBJECTIVE)));
 
-        Boolean selectedIsPerformance = Boolean.parseBoolean(allCurrentAssessments.getString(
+        selectedIsPerformance = Boolean.parseBoolean(allCurrentAssessments.getString(
                 allCurrentAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_ISPERFORMANCE)));
 
-        String selectedGoalDate = allCurrentAssessments.getString(
+        selectedGoalDate = allCurrentAssessments.getString(
                 allCurrentAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_GOAL_DATE));
 
         SimpleDateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
         Date newselectedGoalDate = df.parse(selectedGoalDate);
 
-
         return new Assessment(selectedTitle, selectedIsObjective,
                 selectedIsPerformance, newselectedGoalDate);
-
     }
 
     public void showStartDatePickerDialog(View view){
@@ -262,4 +339,4 @@ public class CourseAddActivity extends AppCompatActivity{
 
 }
 
-}
+

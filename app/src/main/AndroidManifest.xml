@@ -8,7 +8,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        >
         
         <provider
             android:authorities="com.example.wgucoursemanager.wguprovider"
@@ -24,7 +25,6 @@
         <activity
             android:name=".CourseActivity"
             android:label="@string/title_activity_course"
-            android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -33,7 +33,6 @@
         <activity
             android:name=".TermsActivity"
             android:label="@string/title_activity_terms"
-            android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -42,20 +41,10 @@
         <activity
             android:name=".AssessmentsActivity"
             android:label="@string/title_activity_assessments"
-            android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.wgucoursemanager.MainActivity" />
-        </activity>
-        <activity
-            android:name=".Courses"
-            android:label="@string/title_activity_courses"
-            android:parentActivityName=".CourseActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.wgucoursemanager.CourseActivity" />
         </activity>
         <activity
             android:name=".termAddActivity"
@@ -67,16 +56,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.wgucoursemanager.TermsActivity" />
         </activity>
-        <activity
-            android:name=".Assessment"
-            android:label="@string/title_activity_assessment"
-            android:parentActivityName=".AssessmentsActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.wgucoursemanager.AssessmentsActivity" />
-        </activity>
-        <activity android:name=".editActivity"></activity>
     </application>
 
 </manifest>
