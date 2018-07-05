@@ -52,9 +52,10 @@ public class CourseAddActivity extends AppCompatActivity{
         mentorPhone = findViewById(R.id.mentorPhone);
         notes = findViewById(R.id.notes);
 
-        Toolbar toolbar = findViewById(R.id.addCourseToolBar);
+        Toolbar toolbar = findViewById(R.id.addCourseToolbar);
         toolbar.setTitle("Add/Edit Course");
         setSupportActionBar(toolbar);
+
     }
 
     @Override

@@ -39,7 +39,7 @@ public class DBConnHelper extends SQLiteOpenHelper{
     public static final String[] COURSES_ALL_COLUMNS =
             {PK_COURSE_ID, FK_Assessment_ID, COURSE_TITLE, COURSE_START, COURSE_END,
              COURSE_STATUS, COURSE_MENTOR_NAME, COURSE_MENTOR_EMAIL, COURSE_MENTOR_PHONE,
-             COURSE_NOTES};
+             COURSE_NOTES, COURSE_RANGE};
 
     //Constants for identifying Assessments Table
     public static final String TABLE_ASSESSMENTS = "assessments";

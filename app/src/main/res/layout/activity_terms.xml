@@ -6,35 +6,76 @@
     android:layout_height="match_parent"
     tools:context=".TermsActivity">
 
-    <android.support.design.widget.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:theme="@style/AppTheme.AppBarOverlay">
-
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:popupTheme="@style/AppTheme.PopupOverlay"
-            app:title="List of Terms" />
-
-    </android.support.design.widget.AppBarLayout>
-
-    <ListView
-        android:id="@android:id/list"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        app:layout_anchorGravity="bottom" />
-
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
-        android:layout_width="wrap_content"
+        android:layout_width="64dp"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
         android:tint="@android:color/background_light"
         app:backgroundTint="@color/colorPrimary"
         app:srcCompat="@android:drawable/ic_input_add" />
+
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/goToCourses"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:tint="@android:color/background_light"
+        android:translationY="-75dp"
+        app:backgroundTint="@color/colorPrimaryDark"
+        android:src="@android:drawable/ic_menu_directions" />
+
+    <TextView
+        android:id="@+id/goToCoursesLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:translationY="-85dp"
+        android:layout_margin="16dp"
+        android:text="Go To Courses"
+        android:textAlignment="textEnd"
+        android:translationX="-75dp" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/goToAssess"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:clickable="true"
+        android:src="@android:drawable/ic_menu_directions"
+        android:tint="@android:color/background_light"
+        android:translationY="-150dp"
+        app:backgroundTint="@color/colorPrimaryDark"/>
+
+    <TextView
+        android:id="@+id/textView20"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Go To Assessments"
+        android:textAlignment="textEnd"
+        android:translationX="-75dp"
+        android:layout_gravity="bottom|end"
+        android:translationY="-160dp"
+        android:layout_margin="16dp"/>
+
+    <TextView
+        android:id="@+id/textView17"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:text="Your Current Terms"
+        android:textAlignment="textEnd"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
+    <ListView
+        android:id="@android:id/list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"></ListView>
 
 </android.support.design.widget.CoordinatorLayout>

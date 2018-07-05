@@ -22,14 +22,13 @@ public class CourseActivity extends ListActivity
     SimpleCursorAdapter courseAdapter;
     int[] toViews = {android.R.id.text1, android.R.id.text2};
     private static final String[] PROJECTION = new String[] {
-            DBConnHelper.COURSE_TITLE, DBConnHelper.COURSE_RANGE
+            DBConnHelper.COURSE_TITLE, DBConnHelper.COURSE_START
     };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_course);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
         courseAdapter = new SimpleCursorAdapter(this,
                 android.R.layout.simple_list_item_2, null,
@@ -45,6 +44,25 @@ public class CourseActivity extends ListActivity
                 Uri uri = Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSE_ID);
                 openCourseAdd.putExtra(WGUProvider.CONTENT_ITEM_COURSE, uri);
                 startActivityForResult(openCourseAdd, ADD_COURSE_CODE);
+            }
+        });
+
+        FloatingActionButton goToTerms = findViewById(R.id.goToTerms);
+        goToTerms.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                Intent goToTerms = new Intent(CourseActivity.this, TermsActivity.class);
+                startActivity(goToTerms);
+            }
+        });
+
+        FloatingActionButton goToAssessments = findViewById(R.id.goToAssess);
+        goToAssessments.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent goToAssessments = new Intent(CourseActivity.this, AssessmentsActivity.class);
+                startActivity(goToAssessments);
             }
         });
 

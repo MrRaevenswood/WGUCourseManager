@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.support.v7.widget.Toolbar;
@@ -39,6 +40,16 @@ public class termAddActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.addTermToolBar);
         toolbar.setTitle(R.string.Add_Edit_Term);
         setSupportActionBar(toolbar);
+
+        Button goToCoursesButton = findViewById(R.id.bt_addCourses);
+        goToCoursesButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                Intent goToCoursesActivity = new Intent(termAddActivity.this, CourseActivity.class);
+                startActivity(goToCoursesActivity);
+            }
+        });
+
 
     }
 

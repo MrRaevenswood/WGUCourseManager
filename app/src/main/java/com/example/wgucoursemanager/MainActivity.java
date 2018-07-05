@@ -16,15 +16,26 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         appDataConn = new DBConnHelper(getApplicationContext());
-
+        DBConnHelper db = new DBConnHelper(MainActivity.this);
 
 
     }
 
     public void openTermsWindow(View view) {
 
-        DBConnHelper db = new DBConnHelper(MainActivity.this);
         Intent intent = new Intent(MainActivity.this, TermsActivity.class);
+        intent.setData(WGUProvider.CONTENT_URI);
+        startActivity(intent);
+    }
+
+    public void openCoursesWindow(View view){
+        Intent intent = new Intent(MainActivity.this, CourseActivity.class);
+        intent.setData(WGUProvider.CONTENT_URI);
+        startActivity(intent);
+    }
+
+    public void openAssessmentWindow(View view){
+        Intent intent = new Intent(MainActivity.this,AssessmentsActivity.class);
         intent.setData(WGUProvider.CONTENT_URI);
         startActivity(intent);
     }
