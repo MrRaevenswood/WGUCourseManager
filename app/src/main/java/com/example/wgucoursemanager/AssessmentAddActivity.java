@@ -53,20 +53,22 @@ public class AssessmentAddActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item){
         switch (item.getItemId()){
             case R.id.save:
-                Date newSelectedGoalDate = null;
+
                 try {
-                    SimpleDateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
+                    SimpleDateFormat df = new SimpleDateFormat("MM/DD/YYYY");
                     String selectedGoalDate = goalDate.getText().toString();
-                    newSelectedGoalDate = df.parse(selectedGoalDate);
+                    Date newSelectedGoalDate = df.parse(selectedGoalDate);
+
+                    String title = assessmentTitle.getText().toString();
+                    Boolean isObj = isObjective.isChecked();
+                    Boolean isPerf = isPerformance.isChecked();
+
+                    Assessment newAssessment = new Assessment(title, isObj, isPerf, newSelectedGoalDate);
+                    saveAssessment(newAssessment);
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                String title = assessmentTitle.getText().toString();
-                Boolean isObj = isObjective.isChecked();
-                Boolean isPerf = isPerformance.isChecked();
 
-                Assessment newAssessment = new Assessment(title, isObj, isPerf, newSelectedGoalDate);
-                saveAssessment(newAssessment);
                 break;
             case R.id.cancel:
                 Intent returnToAssessmentsView = new Intent(AssessmentAddActivity.this, AssessmentsActivity.class);

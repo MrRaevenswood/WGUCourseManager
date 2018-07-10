@@ -52,7 +52,7 @@ public class CourseAddActivity extends AppCompatActivity{
         mentorPhone = findViewById(R.id.mentorPhone);
         notes = findViewById(R.id.notes);
 
-        Toolbar toolbar = findViewById(R.id.addCourseToolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("Add/Edit Course");
         setSupportActionBar(toolbar);
 
@@ -123,18 +123,22 @@ public class CourseAddActivity extends AppCompatActivity{
         AlertDialog.Builder addAssessment = new AlertDialog.Builder(this);
         addAssessment.setTitle("Add Objective/Performance Assessments?");
 
-        final RadioButton yesOption = new RadioButton(this);
-        final RadioButton noOption = new RadioButton(this);
-
-        addAssessment.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        addAssessment.setPositiveButton("OK", new AlertDialog.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                if(yesOption.isChecked()){
                     Cursor allCurrentAssessments = getAllCurrentAssessments();
-                    SimpleDateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
+
                     if(allCurrentAssessments.moveToFirst()){
                         openAssessmentDialog();
-                    }
+                    }else{
+
+                        Courses newCourse = new Courses(courseTitle.getText().toString(), courseStart.getText().toString(),
+                                courseEnd.getText().toString(), status.getText().toString(), mentorName.getText().toString(),
+                                mentorEmail.getText().toString(), mentorPhone.getText().toString(), notes.getText().toString(),
+                                courseStart.getText().toString() + " - " + courseEnd.getText().toString());
+                        saveCourse(newCourse);
+
+
                 }
 
             }
@@ -175,9 +179,15 @@ public class CourseAddActivity extends AppCompatActivity{
 
         populateAssessments.setView(LayoutInflater.from(getApplicationContext()).inflate(R.layout.custom_dropdown_dialog, null));
         final Spinner objectiveSpinner = findViewById(R.id.objectiveSpinner);
-        objectiveSpinner.setAdapter(objectiveAssessmentTitles);
+        if(!objectiveAssessmentTitles.isEmpty()){
+            objectiveSpinner.setAdapter(objectiveAssessmentTitles);
+        }
         final Spinner performanceSpinner = findViewById(R.id.performanceSpinner);
-        performanceSpinner.setAdapter(performanceAssessmentTitles);
+        if(!objectiveAssessmentTitles.isEmpty()){
+            performanceSpinner.setAdapter(performanceAssessmentTitles);
+
+        }
+
 
         populateAssessments.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
