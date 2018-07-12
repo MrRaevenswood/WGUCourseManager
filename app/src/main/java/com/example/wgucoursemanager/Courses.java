@@ -16,8 +16,8 @@ public class Courses {
     private String mentorName;
     private String mentorEmail;
     private String mentorPhone;
-    private ArrayList<Assessment> objectiveAssessment;
-    private ArrayList<Assessment> performanceAssessment;
+    private ArrayList<Assessment> objectiveAssessment = new ArrayList<>();
+    private ArrayList<Assessment> performanceAssessment = new ArrayList<>();
     private String notes;
     private String courseRange;
 

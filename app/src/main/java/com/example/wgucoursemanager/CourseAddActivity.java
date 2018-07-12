@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.ContentValues;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,10 +14,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -26,6 +29,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class CourseAddActivity extends AppCompatActivity{
 
@@ -52,9 +56,9 @@ public class CourseAddActivity extends AppCompatActivity{
         mentorPhone = findViewById(R.id.mentorPhone);
         notes = findViewById(R.id.notes);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle("Add/Edit Course");
-        setSupportActionBar(toolbar);
+        Toolbar actionBar = findViewById(R.id.toolbar);
+        actionBar.setTitle("Add/Edit Course");
+        setSupportActionBar(actionBar);
 
     }
 
@@ -70,7 +74,10 @@ public class CourseAddActivity extends AppCompatActivity{
             case R.id.save:
                     promptToAddAssessments();
                 break;
-
+            case R.id.cancel:
+                Intent goBackToCourses = new Intent(CourseAddActivity.this, CourseActivity.class );
+                startActivity(goBackToCourses);
+                break;
         }
 
         return false;
@@ -123,37 +130,92 @@ public class CourseAddActivity extends AppCompatActivity{
         AlertDialog.Builder addAssessment = new AlertDialog.Builder(this);
         addAssessment.setTitle("Add Objective/Performance Assessments?");
 
-        addAssessment.setPositiveButton("OK", new AlertDialog.OnClickListener() {
+        addAssessment.setPositiveButton("YES", new AlertDialog.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                    Cursor allCurrentAssessments = getAllCurrentAssessments();
+                openAssessmentDialog();
+            }
+        });
 
-                    if(allCurrentAssessments.moveToFirst()){
-                        openAssessmentDialog();
-                    }else{
+        addAssessment.setNegativeButton("NO", new AlertDialog.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
 
                         Courses newCourse = new Courses(courseTitle.getText().toString(), courseStart.getText().toString(),
                                 courseEnd.getText().toString(), status.getText().toString(), mentorName.getText().toString(),
                                 mentorEmail.getText().toString(), mentorPhone.getText().toString(), notes.getText().toString(),
                                 courseStart.getText().toString() + " - " + courseEnd.getText().toString());
                         saveCourse(newCourse);
-
-
-                }
-
             }
+
+
         });
 
         addAssessment.create().show();
     }
 
+    public void showPopup(View v, ArrayList<String> performance,
+                          ArrayList<String> objective){
+        PopupMenu popup = new PopupMenu(this, v);
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+
+                item.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
+                item.setActionView(new View(getApplicationContext()));
+
+                return false;
+            }
+        });
+        popup.setOnDismissListener(new PopupMenu.OnDismissListener() {
+            @Override
+            public void onDismiss(PopupMenu menu) {
+                int counter = 0;
+                ArrayList<String> assessmentContainer = new ArrayList<>();
+                ArrayList<Integer> assessmentKeys = new ArrayList<>();
+                while(counter < menu.getMenu().size()){
+                    MenuItem currentItem = menu.getMenu().getItem(counter);
+                    if(currentItem.isChecked()){
+                        assessmentContainer.add(currentItem.getTitle().toString());
+                    }
+                    counter += 1;
+                }
+                for (String assessment : assessmentContainer){
+                    assessmentKeys.add(getAssessmentKey(assessment));
+                }
+
+                try {
+                    saveCourse(buildCourse(assessmentKeys));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        for(String s : performance){
+            popup.getMenu().add(R.id.performanceAssessments, popup.getMenu().size(),0, s);
+            popup.getMenu().getItem(popup.getMenu().size() - 1).setCheckable(true);
+        }
+        for(String s : objective){
+            popup.getMenu().add(R.id.objectiveAssessments, popup.getMenu().size(), 0, s);
+            popup.getMenu().getItem(popup.getMenu().size() - 1).setCheckable(true);
+        }
+
+        MenuInflater inflater = popup.getMenuInflater();
+        inflater.inflate(R.menu.course_add_assessments,popup.getMenu());
+
+        popup.show();
+    }
+
     private void openAssessmentDialog() {
 
-        ArrayAdapter<String> objectiveAssessmentTitles = new ArrayAdapter<>(this, R.layout.custom_dropdown_dialog);
-        ArrayAdapter<String> performanceAssessmentTitles = new ArrayAdapter<>(this, R.layout.custom_dropdown_dialog );
+        //AlertDialog.Builder populateAssessments = new AlertDialog.Builder(this);
+        //populateAssessments.setTitle("Choose your one objective or performance of Both");
 
-        AlertDialog.Builder populateAssessments = new AlertDialog.Builder(this);
-        populateAssessments.setTitle("Choose your one objective or performance of Both");
+        //ArrayAdapter<String> objectiveAssessmentTitles = new ArrayAdapter<>(populateAssessments.getContext(), R.layout.custom_dropdown_dialog);
+        //ArrayAdapter<String> performanceAssessmentTitles = new ArrayAdapter<>(populateAssessments.getContext(), R.layout.custom_dropdown_dialog);
+
+        ArrayList<String> performanceAssessmentTitles = new ArrayList<>();
+        ArrayList<String> objectiveAssessmentTitles = new ArrayList<>();
 
         Cursor assignmentsToPopulate = getAllCurrentAssessments();
         while(assignmentsToPopulate.moveToNext()){
@@ -166,26 +228,31 @@ public class CourseAddActivity extends AppCompatActivity{
                     assignmentsToPopulate.getColumnIndex(DBConnHelper.ASSESSMENT_ISPERFORMANCE)).
                     toLowerCase();
 
-            if(isPerformance.equals("true")){
+            if(isPerformance.equals("1") && !currentTitle.isEmpty()){
 
                 performanceAssessmentTitles.add(currentTitle);
 
-            }else if(isPerformance.equals("false")){
+            }else if(isPerformance.equals("0") && !currentTitle.isEmpty()){
 
                 objectiveAssessmentTitles.add(currentTitle);
             }
 
         }
 
+        showPopup(this.getCurrentFocus(),performanceAssessmentTitles, objectiveAssessmentTitles);
+        /*
         populateAssessments.setView(LayoutInflater.from(getApplicationContext()).inflate(R.layout.custom_dropdown_dialog, null));
+        performanceAssessmentTitles.setDropDownViewResource(R.layout.custom_dropdown_dialog);
+        objectiveAssessmentTitles.setDropDownViewResource(R.layout.custom_dropdown_dialog);
+
         final Spinner objectiveSpinner = findViewById(R.id.objectiveSpinner);
+
         if(!objectiveAssessmentTitles.isEmpty()){
             objectiveSpinner.setAdapter(objectiveAssessmentTitles);
         }
         final Spinner performanceSpinner = findViewById(R.id.performanceSpinner);
-        if(!objectiveAssessmentTitles.isEmpty()){
+            if(!objectiveAssessmentTitles.isEmpty()){
             performanceSpinner.setAdapter(performanceAssessmentTitles);
-
         }
 
 
@@ -220,7 +287,7 @@ public class CourseAddActivity extends AppCompatActivity{
             }
         });
 
-        populateAssessments.create().show();
+        populateAssessments.create().show(); */
 
 }
 
@@ -335,7 +402,7 @@ public class CourseAddActivity extends AppCompatActivity{
 
         @Override
         public void onDateSet(android.widget.DatePicker view, int year, int month, int dayOfMonth) {
-
+            month += 1;
             if(this.getArguments().containsKey("startDate")){
                 courseStart.setText(String.valueOf(month) + "/" + String.valueOf(dayOfMonth) + "/"
                         + String.valueOf(year));
