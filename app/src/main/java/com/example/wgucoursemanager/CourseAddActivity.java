@@ -10,14 +10,21 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
+import android.support.constraint.ConstraintSet;
+import android.support.design.widget.AppBarLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.ContextMenu;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.PopupWindow;
@@ -25,11 +32,15 @@ import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.R.*;
+
+import org.w3c.dom.Text;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Dictionary;
 import java.util.List;
 
 public class CourseAddActivity extends AppCompatActivity{
@@ -157,8 +168,104 @@ public class CourseAddActivity extends AppCompatActivity{
 
     public void showPopupWindow(ArrayList<String> performance,
                                 ArrayList<String> objective){
-        PopupWindow pop = new PopupWindow(infl)
 
+        ConstraintLayout to_add = findViewById(R.id.courseAdd);
+        ArrayList<View> viewsInOriginalLayout = new ArrayList<>();
+        ArrayList<View> viewsInNewLayout = new ArrayList<>();
+
+        for( int i = 0; i < to_add.getChildCount(); i++){
+            View v = to_add.getChildAt(i);
+            if(v.getId() == R.id.toolbar){continue;}
+            v.setVisibility(View.INVISIBLE);
+            viewsInOriginalLayout.add(to_add.getChildAt(i));
+        }
+        ConstraintSet set = new ConstraintSet();
+
+        final ArrayList<CheckBox> generatedCheckBoxIds = new ArrayList<>();
+
+        TextView performanceTitle = new TextView(to_add.getContext()) ;
+        performanceTitle.setText("Add Performance Assessments Below:");
+        performanceTitle.setId(View.generateViewId());
+        to_add.addView(performanceTitle);
+
+
+        for(String p : performance){
+            CheckBox performanceCheckBox = new CheckBox(to_add.getContext());
+            performanceCheckBox.setId(View.generateViewId());
+            performanceCheckBox.setText(p);
+            to_add.addView(performanceCheckBox);
+
+            generatedCheckBoxIds.add(performanceCheckBox);
+        }
+
+        TextView objectiveTitle = new TextView(to_add.getContext());
+        objectiveTitle.setText("Add Objective Assessments Below:");
+        objectiveTitle.setId(View.generateViewId());
+        to_add.addView(objectiveTitle);
+
+        for(String o: objective){
+            CheckBox objectiveCheckBox = new CheckBox(to_add.getContext());
+            objectiveCheckBox.setId(View.generateViewId());
+            objectiveCheckBox.setText(o);
+            to_add.addView(objectiveCheckBox);
+
+            generatedCheckBoxIds.add(objectiveCheckBox);
+        }
+
+        Button addButton = new Button(to_add.getContext());
+        addButton.setId(View.generateViewId());
+        addButton.setText("Add Assessments");
+        addButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                ArrayList<String> assessmentContainer = new ArrayList<>();
+                ArrayList<Integer> assessmentKeys = new ArrayList<>();
+                for(CheckBox checkBox : generatedCheckBoxIds){
+                    if(checkBox.isSelected()){
+                        assessmentContainer.add(checkBox.getText().toString());
+                    }
+                }
+                for (String assessment : assessmentContainer){
+                    assessmentKeys.add(getAssessmentKey(assessment));
+                }
+
+                try {
+                    saveCourse(buildCourse(assessmentKeys));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        to_add.addView(addButton);
+
+        for( int i = 0; i < to_add.getChildCount(); i++){
+            viewsInNewLayout.add(to_add.getChildAt(i));
+        }
+
+        ArrayList<View> newView = new ArrayList<>();
+
+        for(View v : viewsInNewLayout){
+            if(!viewsInOriginalLayout.contains(v)){
+                newView.add(v);
+            }
+        }
+
+
+
+        set.connect(newView.get(0).getId(), ConstraintSet.TOP, R.id.toolbar, ConstraintSet.BOTTOM, 200);
+        //newView.get(0).setTranslationY(300);
+
+        int move = 200;
+
+        for(int i = 0; i < newView.size(); i++){
+            if(i == 0){continue;}
+            else {
+                set.connect(newView.get(i - 1).getId(), ConstraintSet.TOP, newView.get(i).getId(), ConstraintSet.BOTTOM, 60);
+                newView.get(i).setTranslationY(move);
+                move+= 100;
+            }
+        }
     }
 
     public void showPopup(View v, ArrayList<String> performance,
@@ -187,15 +294,7 @@ public class CourseAddActivity extends AppCompatActivity{
                     }
                     counter += 1;
                 }
-                for (String assessment : assessmentContainer){
-                    assessmentKeys.add(getAssessmentKey(assessment));
-                }
 
-                try {
-                    saveCourse(buildCourse(assessmentKeys));
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
             }
         });
         for(String s : performance){
@@ -246,7 +345,7 @@ public class CourseAddActivity extends AppCompatActivity{
 
         }
 
-        showPopup(this.getCurrentFocus(),performanceAssessmentTitles, objectiveAssessmentTitles);
+        showPopupWindow(performanceAssessmentTitles, objectiveAssessmentTitles);
         /*
         populateAssessments.setView(LayoutInflater.from(getApplicationContext()).inflate(R.layout.custom_dropdown_dialog, null));
         performanceAssessmentTitles.setDropDownViewResource(R.layout.custom_dropdown_dialog);

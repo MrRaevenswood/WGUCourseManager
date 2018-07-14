@@ -10,17 +10,25 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.support.constraint.ConstraintLayout;
+import android.support.constraint.ConstraintSet;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.support.v7.widget.Toolbar;
 
+import java.lang.reflect.Array;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 
 public class termAddActivity extends AppCompatActivity {
 
@@ -41,16 +49,6 @@ public class termAddActivity extends AppCompatActivity {
         toolbar.setTitle(R.string.Add_Edit_Term);
         setSupportActionBar(toolbar);
 
-        Button goToCoursesButton = findViewById(R.id.bt_addCourses);
-        goToCoursesButton.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                Intent goToCoursesActivity = new Intent(termAddActivity.this, CourseActivity.class);
-                startActivity(goToCoursesActivity);
-            }
-        });
-
-
     }
 
     @Override
@@ -63,12 +61,7 @@ public class termAddActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item){
         switch (item.getItemId()){
             case R.id.save:
-                String title = termTitle.getText().toString();
-                String start = termStart.getText().toString();
-                String end = termEnd.getText().toString();
-                String termRange = start + " - " + end;
-                Term newTerm = new Term(title,start,end,termRange);
-                saveTerm(newTerm);
+                promptToAddCourses();
                 break;
             case R.id.cancel:
                 Intent returnToTermsView = new Intent(termAddActivity.this, TermsActivity.class);
@@ -93,6 +86,213 @@ public class termAddActivity extends AppCompatActivity {
         setResult(RESULT_OK);
         finish();
 
+    }
+
+    private void promptToAddCourses() {
+
+        AlertDialog.Builder addAssessment = new AlertDialog.Builder(this);
+        addAssessment.setTitle("Add Courses?");
+
+        addAssessment.setPositiveButton("YES", new AlertDialog.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                openCoursesDialog();
+            }
+        });
+
+        addAssessment.setNegativeButton("NO", new AlertDialog.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+                String title = termTitle.getText().toString();
+                String start = termStart.getText().toString();
+                String end = termEnd.getText().toString();
+                String termRange = start + " - " + end;
+                Term newTerm = new Term(title,start,end,termRange);
+                saveTerm(newTerm);
+            }
+
+
+        });
+
+        addAssessment.create().show();
+    }
+
+    private void openCoursesDialog() {
+        ArrayList<String> courses = new ArrayList<>();
+        Cursor coursesToPopulate = getAllCourses();
+        while(coursesToPopulate.moveToNext()){
+            courses.add(coursesToPopulate.getString(
+                    coursesToPopulate.getColumnIndex(DBConnHelper.COURSE_TITLE)));
+        }
+
+        showPopupWindow(courses);
+    }
+
+    private void showPopupWindow(ArrayList<String> courses) {
+
+        ConstraintLayout to_add = findViewById(R.id.termAdd);
+        ArrayList<View> viewsInOriginalLayout = new ArrayList<>();
+        ArrayList<View> viewsInNewLayout = new ArrayList<>();
+
+        for( int i = 0; i < to_add.getChildCount(); i++){
+            View v = to_add.getChildAt(i);
+            if(v.getId() == R.id.addTermToolBar){continue;}
+            v.setVisibility(View.INVISIBLE);
+            viewsInOriginalLayout.add(to_add.getChildAt(i));
+        }
+        ConstraintSet set = new ConstraintSet();
+
+        final ArrayList<CheckBox> generatedCheckBoxIds = new ArrayList<>();
+
+        TextView performanceTitle = new TextView(to_add.getContext()) ;
+        performanceTitle.setText("Add Courses Below:");
+        performanceTitle.setId(View.generateViewId());
+        to_add.addView(performanceTitle);
+
+
+        for(String p : courses){
+            CheckBox performanceCheckBox = new CheckBox(to_add.getContext());
+            performanceCheckBox.setId(View.generateViewId());
+            performanceCheckBox.setText(p);
+            to_add.addView(performanceCheckBox);
+
+            generatedCheckBoxIds.add(performanceCheckBox);
+        }
+
+        Button addButton = new Button(to_add.getContext());
+        addButton.setId(View.generateViewId());
+        addButton.setText("Add Courses");
+        addButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                ArrayList<String> coursesContainer = new ArrayList<>();
+                ArrayList<Integer> coursesKeys = new ArrayList<>();
+                for(CheckBox checkBox : generatedCheckBoxIds){
+                    if(checkBox.isSelected()){
+                        coursesContainer.add(checkBox.getText().toString());
+                    }
+                }
+                for (String courses : coursesContainer){
+                    coursesKeys.add(getCoursesKey(courses));
+                }
+
+                try {
+                    saveTerm(buildTerm(coursesKeys));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        to_add.addView(addButton);
+
+        for( int i = 0; i < to_add.getChildCount(); i++){
+            viewsInNewLayout.add(to_add.getChildAt(i));
+        }
+
+        ArrayList<View> newView = new ArrayList<>();
+
+        for(View v : viewsInNewLayout){
+            if(!viewsInOriginalLayout.contains(v)){
+                newView.add(v);
+            }
+        }
+
+        set.connect(newView.get(0).getId(), ConstraintSet.TOP, R.id.addTermToolBar, ConstraintSet.BOTTOM, 200);
+        //newView.get(0).setTranslationY(300);
+
+        int move = 200;
+
+        for(int i = 0; i < newView.size(); i++){
+            if(i == 0){continue;}
+            else {
+                set.connect(newView.get(i - 1).getId(), ConstraintSet.TOP, newView.get(i).getId(), ConstraintSet.BOTTOM, 60);
+                newView.get(i).setTranslationY(move);
+                move+= 100;
+            }
+        }
+    }
+
+    private Term buildTerm(ArrayList<Integer> coursesKeys) throws ParseException {
+        String title = termTitle.getText().toString();
+        String startDate = termStart.getText().toString();
+        String endDate = termEnd.getText().toString();
+        String termRange = startDate + " - " + endDate;
+        ArrayList<Courses> allCurrentCoursesForTerm = new ArrayList<>();
+
+        for(Integer i : coursesKeys){
+            allCurrentCoursesForTerm.add(getCoursesFromSelected(i));
+        }
+
+        if(coursesKeys.isEmpty()){
+            return new Term(title, startDate, endDate, termRange);
+        }else{
+            return new Term(title, startDate, endDate, termRange, allCurrentCoursesForTerm);
+        }
+    }
+
+    private Courses getCoursesFromSelected(Integer i) throws ParseException {
+        Cursor allCurrentCourses;
+        String title, start, end, status, mentorN, mentorE, mentorP, notesTaken;
+        ArrayList<Assessment> allAssessmentsForCourse;
+
+        allCurrentCourses = getAllCourses();
+        allCurrentCourses.moveToFirst();
+
+        title = allCurrentCourses.getString(
+                allCurrentCourses.getColumnIndex(DBConnHelper.COURSE_TITLE)
+        );
+
+        start = allCurrentCourses.getString(allCurrentCourses.getColumnIndex(DBConnHelper.COURSE_START));
+        end = allCurrentCourses.getString(allCurrentCourses.getColumnIndex(DBConnHelper.COURSE_END));
+        status = allCurrentCourses.getString(allCurrentCourses.getColumnIndex(DBConnHelper.COURSE_STATUS));
+        mentorN = allCurrentCourses.getString(allCurrentCourses.getColumnIndex(DBConnHelper.COURSE_MENTOR_NAME));
+        mentorE = allCurrentCourses.getString(allCurrentCourses.getColumnIndex(DBConnHelper.COURSE_MENTOR_EMAIL));
+        mentorP = allCurrentCourses.getString(allCurrentCourses.getColumnIndex(DBConnHelper.COURSE_MENTOR_PHONE));
+        notesTaken = allCurrentCourses.getString(allCurrentCourses.getColumnIndex(DBConnHelper.COURSE_NOTES));
+        allAssessmentsForCourse = getAssessmentsForSelectedCourse(allCurrentCourses.getInt(allCurrentCourses.getColumnIndex(DBConnHelper.FK_Assessment_ID)));
+
+        if(allAssessmentsForCourse.isEmpty()){return new Courses(title, start, end, status, mentorN, mentorE, mentorP,
+                notesTaken, start + " - " + end);}
+        return new Courses(title,start,end,status,mentorN,mentorE,mentorP, notesTaken, start + " - " + end,
+                allAssessmentsForCourse);
+    }
+
+    private ArrayList<Assessment> getAssessmentsForSelectedCourse(Integer courseKey) throws ParseException {
+        Cursor allAssessments = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_ID),
+                DBConnHelper.ASSESSMENTS_ALL_COLUMNS, "Where " + DBConnHelper.FK_COURSE_ID + " = " + courseKey, null,
+                null);
+        ArrayList<Assessment> allAssessmentsForCourse = new ArrayList<>();
+        String title;
+        Boolean isObjective, isPerformance;
+        SimpleDateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
+        Date goalDate;
+
+        allAssessments.moveToFirst();
+        while(allAssessments.moveToNext()){
+            title = allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_TITLE));
+            isObjective = Boolean.parseBoolean(allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_ISOBJECTIVE)));
+            isPerformance = Boolean.parseBoolean(allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_ISPERFORMANCE)));
+            goalDate = df.parse(allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_GOAL_DATE)));
+
+            allAssessmentsForCourse.add(new Assessment(title,isObjective,isPerformance,goalDate));
+        }
+        return allAssessmentsForCourse;
+
+    }
+
+    private Integer getCoursesKey(String courseTitle) {
+        Cursor coursesKey = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSE_ID),
+                new String[]{DBConnHelper.PK_COURSE_ID}, "Where " + DBConnHelper.COURSE_TITLE + "= " + courseTitle, null,
+                null);
+        coursesKey.moveToFirst();
+        return coursesKey.getInt(0);
+    }
+
+    private Cursor getAllCourses() {
+        return getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSE_ID),
+                DBConnHelper.COURSES_ALL_COLUMNS, null, null, null);
     }
 
     public void showStartDatePickerDialog(View view){
@@ -135,7 +335,7 @@ public class termAddActivity extends AppCompatActivity {
 
         @Override
         public void onDateSet(android.widget.DatePicker view, int year, int month, int dayOfMonth) {
-
+            month += 1;
             if(this.getArguments().containsKey("startDate")){
                 termStart.setText(String.valueOf(month) + "/" + String.valueOf(dayOfMonth) + "/"
                         + String.valueOf(year));

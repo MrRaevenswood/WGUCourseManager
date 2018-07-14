@@ -11,11 +11,12 @@ public class Term {
     private ArrayList<Courses> courses;
 
     public Term (String title, String startDate,
-                 String endDate, Courses course){
+                 String endDate, String termRange, ArrayList<Courses> courses){
         this.setTitle(title);
         this.setStartDate(startDate);
         this.setEndDate(endDate);
-        this.addCourse(course);
+        this.courses = courses;
+        this.termRange = termRange;
     }
 
     public Term (String title, String startDate,
