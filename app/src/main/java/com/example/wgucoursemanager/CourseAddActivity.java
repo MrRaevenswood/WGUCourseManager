@@ -20,6 +20,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.PopupMenu;
+import android.widget.PopupWindow;
 import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -152,6 +153,12 @@ public class CourseAddActivity extends AppCompatActivity{
         });
 
         addAssessment.create().show();
+    }
+
+    public void showPopupWindow(ArrayList<String> performance,
+                                ArrayList<String> objective){
+        PopupWindow pop = new PopupWindow(infl)
+
     }
 
     public void showPopup(View v, ArrayList<String> performance,
