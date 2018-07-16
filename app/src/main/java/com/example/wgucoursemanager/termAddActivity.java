@@ -101,6 +101,8 @@ public class termAddActivity extends AppCompatActivity {
                 values.put(DBConnHelper.TERM_TITLE, termTitle.getText().toString());
                 values.put(DBConnHelper.TERM_START, termStart.getText().toString());
                 values.put(DBConnHelper.TERM_END, termEnd.getText().toString());
+                values.put(DBConnHelper.TERM_RANGE, termStart.getText().toString() + " - " +
+                    termEnd.getText().toString());
 
                 getContentResolver().update(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.TERMS_ID), values,
                         DBConnHelper.TERM_ID + " = " + termIdToUpdate, null);

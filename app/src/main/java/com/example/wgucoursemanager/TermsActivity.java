@@ -114,7 +114,25 @@ public class TermsActivity extends ListActivity
             }
         });
 
+        editTerm.setNegativeButton("Delete", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Cursor selectedTermDataToDelete = (Cursor)l.getItemAtPosition(position);
+                String selectedTermData = selectedTermDataToDelete.getString(1);
+
+                ArrayList<String> termData = getTermData(selectedTermData);
+                getContentResolver().delete(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.TERMS_ID),
+                        DBConnHelper.TERM_ID + " = " + termData.get(0), null);
+                restartLoader();
+
+            }
+        });
+
         editTerm.create().show();
+    }
+
+    public void restartLoader(){
+        getLoaderManager().restartLoader(ADD_TERM_CODE, null, this);
     }
 
     @Override
