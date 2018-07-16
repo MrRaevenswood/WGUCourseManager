@@ -22,7 +22,7 @@ public class WGUProvider extends ContentProvider {
     public static final int TERMS_ID = 2;
     public static final int ASSESSMENTS_IN_COURSES_ID = 3;
     public static final int COURSE_ID = 4;
-    public static final int ASSESSMENTS = 5;
+    public static final int COURSES_WITH_ASSESSMENTS_ID = 5;
     public static final int ASSESSMENTS_ID = 6;
 
     private static final UriMatcher uriMatcher =
@@ -69,6 +69,9 @@ public class WGUProvider extends ContentProvider {
             case ASSESSMENTS_IN_COURSES_ID:
                 return database.query(DBConnHelper.TABLE_ASSESSMENTS_IN_COURSES, projection,
                         selection,selectionArgs,null,null, sortOrder);
+            case COURSES_WITH_ASSESSMENTS_ID:
+                return database.query(DBConnHelper.TABLE_ASSESSMENTS_IN_COURSES, projection,
+                        selection,selection, null, null, sortOrder);
         }
 
         return null;
@@ -104,6 +107,8 @@ public class WGUProvider extends ContentProvider {
                 break;
             case ASSESSMENTS_IN_COURSES_ID:
                 id = database.insert(DBConnHelper.TABLE_ASSESSMENTS_IN_COURSES, null, values);
+            case COURSES_WITH_ASSESSMENTS_ID:
+                id = database.insert(DBConnHelper.TABLE_ASSESSMENTS_IN_COURSES, null, values);
         }
 
         return Uri.parse(BASE_PATH + "/" + id);
@@ -123,6 +128,8 @@ public class WGUProvider extends ContentProvider {
                 return database.delete(DBConnHelper.TABLE_COURSES_IN_TERM, selection, selectionArgs);
             case ASSESSMENTS_IN_COURSES_ID:
                 return database.delete(DBConnHelper.TABLE_ASSESSMENTS_IN_COURSES, selection, selectionArgs);
+            case COURSES_WITH_ASSESSMENTS_ID:
+                return database.delete(DBConnHelper.TABLE_ASSESSMENTS_IN_COURSES, selection, selectionArgs);
         }
 
         return 0;
@@ -140,6 +147,8 @@ public class WGUProvider extends ContentProvider {
             case COURSES_IN_TERM_ID:
                 return database.update(DBConnHelper.TABLE_COURSES_IN_TERM, values, selection, selectionArgs);
             case ASSESSMENTS_IN_COURSES_ID:
+                return database.update(DBConnHelper.TABLE_ASSESSMENTS_IN_COURSES, values, selection, selectionArgs);
+            case COURSES_WITH_ASSESSMENTS_ID:
                 return database.update(DBConnHelper.TABLE_ASSESSMENTS_IN_COURSES, values, selection, selectionArgs);
         }
 

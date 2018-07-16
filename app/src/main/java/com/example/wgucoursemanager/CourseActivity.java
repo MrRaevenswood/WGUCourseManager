@@ -1,8 +1,10 @@
 package com.example.wgucoursemanager;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.LoaderManager;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
@@ -13,7 +15,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+
+import java.util.ArrayList;
 
 public class CourseActivity extends ListActivity
     implements LoaderManager.LoaderCallbacks<Cursor>{
@@ -69,7 +74,65 @@ public class CourseActivity extends ListActivity
         getLoaderManager().initLoader(ADD_COURSE_CODE, null, this);
    }
 
+   private ArrayList<String> getCourseData(String selectedCourse){
+        Cursor courseData = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSE_ID),
+                DBConnHelper.COURSES_ALL_COLUMNS, DBConnHelper.COURSE_TITLE + " = " + "\"" + selectedCourse + "\"", null, null);
+
+        courseData.moveToFirst();
+
+        ArrayList<String> courseDataFound = new ArrayList<>();
+        for(int i = 0; i < DBConnHelper.COURSES_ALL_COLUMNS.length; i++){
+            courseDataFound.add(courseData.getString(i));
+        }
+
+        return courseDataFound;
+   }
+
    @Override
+   protected void onListItemClick(final ListView l, View v, final int position, long id){
+       AlertDialog.Builder editCourse = new AlertDialog.Builder(this);
+       editCourse.setTitle("Would you like to edit or delete the selected course?");
+
+       editCourse.setPositiveButton("Edit", new DialogInterface.OnClickListener(){
+
+           @Override
+           public void onClick(DialogInterface dialog, int which) {
+               Cursor selectedCourseFromList = (Cursor)l.getItemAtPosition(position);
+
+               String selectedCourse = selectedCourseFromList.getString(1);
+               Intent editCourse = new Intent(CourseActivity.this, CourseAddActivity.class);
+               editCourse.putExtra(new "Edit", 1);
+               editCourse.putStringArrayListExtra("selectedCourse", getCourseData(selectedCourse));
+               startActivityForResult(editCourse, ADD_COURSE_CODE);
+           }
+       });
+
+       editCourse.setNegativeButton("Delete", new DialogInterface.OnClickListener() {
+           @Override
+           public void onClick(DialogInterface dialog, int which) {
+               Cursor selectedCourseDataToDelete = (Cursor)l.getItemAtPosition(position);
+
+               String selectedCourseData = selectedCourseDataToDelete.getString(1);
+               String selectedCourseDataId = getCourseData(selectedCourseData).get(0);
+
+               getContentResolver().delete(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSE_ID),
+                       DBConnHelper.PK_COURSE_ID + " = " selectedCourseDataId, null);
+               getContentResolver().delete(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSES_IN_TERM_ID),
+                       DBConnHelper.FK_COURSE_ID_TERMS + " = " + selectedCourseDataId, null);
+               getContentResolver().delete(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSES_WITH_ASSESSMENTS_ID),
+                       DBConnHelper.FK_COURSE_ID_ASSESSMENTS + " = " + selectedCourseDataId, null);
+               restartLoader();
+           }
+       });
+
+       editCourse.create().show();
+   }
+
+    private void restartLoader() {
+        getLoaderManager().restartLoader(ADD_COURSE_CODE, null, this);
+    }
+
+    @Override
    public boolean onCreateOptionsMenu(Menu menu){
         getMenuInflater().inflate(R.menu.course_activity_menu, menu);
         return true;
@@ -104,7 +167,7 @@ public class CourseActivity extends ListActivity
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return new CursorLoader(this, Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSE_ID),
-                PROJECTION, null, null, null);
+                null, null, null, null);
     }
 
     @Override

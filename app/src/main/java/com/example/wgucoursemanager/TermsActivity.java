@@ -12,6 +12,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.NotificationBuilderWithBuilderAccessor;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -118,11 +119,15 @@ public class TermsActivity extends ListActivity
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Cursor selectedTermDataToDelete = (Cursor)l.getItemAtPosition(position);
-                String selectedTermData = selectedTermDataToDelete.getString(1);
 
-                ArrayList<String> termData = getTermData(selectedTermData);
+                String selectedTermData = selectedTermDataToDelete.getString(1);
+                String selectedTermDataId = getTermData(selectedTermData).get(0);
+
                 getContentResolver().delete(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.TERMS_ID),
-                        DBConnHelper.TERM_ID + " = " + termData.get(0), null);
+                        DBConnHelper.TERM_ID + " = " + selectedTermDataId, null);
+                getContentResolver().delete(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSES_IN_TERM_ID),
+                        DBConnHelper.COURSES_IN_TERM_ID + " = " + selectedTermDataId, null);
+
                 restartLoader();
 
             }

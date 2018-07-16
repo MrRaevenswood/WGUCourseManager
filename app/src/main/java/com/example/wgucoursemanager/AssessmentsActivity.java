@@ -1,8 +1,10 @@
 package com.example.wgucoursemanager;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.LoaderManager;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
@@ -15,7 +17,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+
+import java.util.ArrayList;
 
 public class AssessmentsActivity extends ListActivity
     implements LoaderManager.LoaderCallbacks<Cursor>{
@@ -71,6 +76,64 @@ public class AssessmentsActivity extends ListActivity
         getLoaderManager().initLoader(ADD_ASSESSMENT_CODE, null, this);
     }
 
+    private ArrayList<String> getAssessmentData(String selectedAssessment){
+        Cursor assessmentData = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_ID),
+                DBConnHelper.ASSESSMENTS_ALL_COLUMNS, DBConnHelper.ASSESSMENT_TITLE + " = " + "\"" + selectedAssessment + "\"", null, null);
+        assessmentData.moveToFirst();
+
+        ArrayList<String> assessmentDataFound = new ArrayList<>();
+        for(int i = 0; i < DBConnHelper.ASSESSMENTS_ALL_COLUMNS.length; i++){
+            assessmentDataFound.add(assessmentData.getString(i));
+        }
+
+        return assessmentDataFound;
+    }
+
+    @Override
+    protected void onListItemClick(final ListView l, View v, final int position, long id){
+        AlertDialog.Builder editAssessment = new AlertDialog.Builder(this);
+        editAssessment.setTitle("Would you like to edit or delete the selected assessment?");
+
+        editAssessment.setPositiveButton("Edit", new DialogInterface.OnClickListener(){
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Cursor selectedAssessmentFromList = (Cursor)l.getItemAtPosition(position);
+
+                String selectedAssessment = selectedAssessmentFromList.getString(selectedAssessmentFromList.getColumnIndex(DBConnHelper.ASSESSMENT_TITLE));
+                Intent editAssessment = new Intent(AssessmentsActivity.this, AssessmentAddActivity.class);
+                editAssessment.putExtra("Edit", 1);
+                editAssessment.putStringArrayListExtra("selectedAssessment", getAssessmentData(selectedAssessment));
+                startActivityForResult(editAssessment, ADD_ASSESSMENT_CODE);
+            }
+        });
+
+        editAssessment.setNegativeButton("Delete", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Cursor selectedAssessmentDataToDelete = (Cursor)l.getItemAtPosition(position);
+
+                String selectedAssessmentData = selectedAssessmentDataToDelete.getString(
+                        selectedAssessmentDataToDelete.getColumnIndex(DBConnHelper.ASSESSMENT_TITLE)
+                );
+                String selectedAssessmentDataId = getAssessmentData(selectedAssessmentData).get(0);
+
+                getContentResolver().delete(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_ID),
+                        DBConnHelper.PK_Assessment_ID  + " = " + selectedAssessmentDataId, null);
+                getContentResolver().delete(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_IN_COURSES_ID),
+                        DBConnHelper.FK_ASSESSMENTS_ID_IN_COURSES + " = " + selectedAssessmentDataId, null);
+
+                restartLoader();
+            }
+        });
+
+        editAssessment.create().show();
+    }
+
+    private void restartLoader() {
+        getLoaderManager().restartLoader(ADD_ASSESSMENT_CODE, null , this);
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data){
         if(requestCode == ADD_ASSESSMENT_CODE && resultCode == RESULT_OK){
@@ -83,7 +146,7 @@ public class AssessmentsActivity extends ListActivity
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return new CursorLoader(this, Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_ID),
-                PROJECTION, null, null, null);
+                null, null, null, null);
     }
 
     @Override
