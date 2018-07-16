@@ -35,6 +35,8 @@ public class termAddActivity extends AppCompatActivity {
     private static TextView termTitle;
     private static TextView termStart;
     private static TextView termEnd;
+    private Bundle activityBundle;
+    private int termIdToUpdate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +46,16 @@ public class termAddActivity extends AppCompatActivity {
         termTitle = findViewById(R.id.termTitle);
         termStart = findViewById(R.id.termStartDate);
         termEnd = findViewById(R.id.termEndDate);
+        activityBundle = getIntent().getExtras();
+
+        if(activityBundle.get("Edit") != null){
+           ArrayList<String> termData = activityBundle.getStringArrayList("selectedTerm");
+           termTitle.setText(termData.get(1));
+           termStart.setText(termData.get(2));
+           termEnd.setText(termData.get(3));
+
+           termIdToUpdate = Integer.parseInt(termData.get(0));
+        }
 
         Toolbar toolbar = findViewById(R.id.addTermToolBar);
         toolbar.setTitle(R.string.Add_Edit_Term);
@@ -61,7 +73,12 @@ public class termAddActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item){
         switch (item.getItemId()){
             case R.id.save:
-                promptToAddCourses();
+                if(activityBundle.get("Edit") != null){
+                    promptToUpdateCourses();
+
+                }else{
+                    promptToAddCourses();
+                }
                 break;
             case R.id.cancel:
                 Intent returnToTermsView = new Intent(termAddActivity.this, TermsActivity.class);
@@ -70,6 +87,57 @@ public class termAddActivity extends AppCompatActivity {
         }
 
         return true;
+    }
+
+    private void promptToUpdateCourses() {
+
+        AlertDialog.Builder updateCourses = new AlertDialog.Builder(this);
+        updateCourses.setTitle("Update Courses?");
+
+        updateCourses.setNegativeButton("NO", new AlertDialog.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                ContentValues values = new ContentValues();
+                values.put(DBConnHelper.TERM_TITLE, termTitle.getText().toString());
+                values.put(DBConnHelper.TERM_START, termStart.getText().toString());
+                values.put(DBConnHelper.TERM_END, termEnd.getText().toString());
+
+                getContentResolver().update(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.TERMS_ID), values,
+                        DBConnHelper.TERM_ID + " = " + termIdToUpdate, null);
+                setResult(RESULT_OK);
+                finish();
+            }
+        });
+
+        updateCourses.setPositiveButton("YES", new AlertDialog.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                ArrayList<String> selectedCourseIds = new ArrayList<>();
+                ArrayList<String> selectedCourseTitles = new ArrayList<>();
+                Cursor allCoursesThisTerm = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + DBConnHelper.COURSES_IN_TERM_ID),
+                        DBConnHelper.COURSES_IN_TERM_ALL_COLUMNS, "Where " + DBConnHelper.FK_TERM_ID + " = " + termIdToUpdate, null, null);
+                allCoursesThisTerm.moveToFirst();
+                do{
+                    selectedCourseIds.add(allCoursesThisTerm.getString(allCoursesThisTerm.getColumnIndex(DBConnHelper.FK_COURSE_ID_TERMS)));
+                }while(allCoursesThisTerm.moveToNext());
+
+                Cursor allCourses = getAllCourses();
+                allCourses.moveToFirst();
+                do{
+                    for(String id : selectedCourseIds){
+
+                        if(allCourses.getString(allCourses.getColumnIndex(DBConnHelper.PK_COURSE_ID)).equals(id)){
+
+                            selectedCourseTitles.add(allCourses.getString(allCourses.getColumnIndex(DBConnHelper.COURSE_TITLE)));
+                        }
+                    }
+                }while(allCourses.moveToNext());
+
+                openCoursesDialog(selectedCourseTitles);
+            }
+        });
+
+        updateCourses.create().show();
     }
 
     private void saveTerm(Term newTerm) {
@@ -96,7 +164,7 @@ public class termAddActivity extends AppCompatActivity {
         addAssessment.setPositiveButton("YES", new AlertDialog.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                openCoursesDialog();
+                openCoursesDialog(null);
             }
         });
 
@@ -118,7 +186,7 @@ public class termAddActivity extends AppCompatActivity {
         addAssessment.create().show();
     }
 
-    private void openCoursesDialog() {
+    private void openCoursesDialog(ArrayList<String> selectecCourses) {
         ArrayList<String> courses = new ArrayList<>();
         Cursor coursesToPopulate = getAllCourses();
         while(coursesToPopulate.moveToNext()){
@@ -126,10 +194,10 @@ public class termAddActivity extends AppCompatActivity {
                     coursesToPopulate.getColumnIndex(DBConnHelper.COURSE_TITLE)));
         }
 
-        showPopupWindow(courses);
+        showPopupWindow(courses, selectecCourses);
     }
 
-    private void showPopupWindow(ArrayList<String> courses) {
+    private void showPopupWindow(ArrayList<String> courses, final ArrayList<String> selectedCourses) {
 
         ConstraintLayout to_add = findViewById(R.id.termAdd);
         ArrayList<View> viewsInOriginalLayout = new ArrayList<>();
@@ -155,6 +223,9 @@ public class termAddActivity extends AppCompatActivity {
             CheckBox performanceCheckBox = new CheckBox(to_add.getContext());
             performanceCheckBox.setId(View.generateViewId());
             performanceCheckBox.setText(p);
+            if(selectedCourses.indexOf(p) != -1 ){
+                performanceCheckBox.setChecked(true);
+            }
             to_add.addView(performanceCheckBox);
 
             generatedCheckBoxIds.add(performanceCheckBox);
@@ -169,8 +240,18 @@ public class termAddActivity extends AppCompatActivity {
                 ArrayList<String> coursesContainer = new ArrayList<>();
                 ArrayList<Integer> coursesKeys = new ArrayList<>();
                 for(CheckBox checkBox : generatedCheckBoxIds){
-                    if(checkBox.isSelected()){
+                    if(checkBox.isChecked() && selectedCourses.indexOf(checkBox.getText().toString()) == -1){
                         coursesContainer.add(checkBox.getText().toString());
+                    }else if(!checkBox.isChecked() && selectedCourses.indexOf(checkBox.getText().toString()) != -1){
+                        Cursor courses = getAllCourses();
+                        courses.moveToFirst();
+                        do{
+                            if(courses.getString(courses.getColumnIndex(DBConnHelper.PK_COURSE_ID)).equals(checkBox.getText().toString())){
+                                getContentResolver().delete(Uri.parse(WGUProvider.CONTENT_URI + "/" + DBConnHelper.COURSES_IN_TERM_ID),
+                                        "Where " + DBConnHelper.FK_TERM_ID + " = " + termIdToUpdate + " AND " + DBConnHelper.FK_COURSE_ID_TERMS +
+                                                " = " + courses.getString(courses.getColumnIndex(DBConnHelper.PK_COURSE_ID)), null);
+                            }
+                        }while(courses.moveToNext());
                     }
                 }
                 for (String courses : coursesContainer){
@@ -251,7 +332,7 @@ public class termAddActivity extends AppCompatActivity {
         mentorE = allCurrentCourses.getString(allCurrentCourses.getColumnIndex(DBConnHelper.COURSE_MENTOR_EMAIL));
         mentorP = allCurrentCourses.getString(allCurrentCourses.getColumnIndex(DBConnHelper.COURSE_MENTOR_PHONE));
         notesTaken = allCurrentCourses.getString(allCurrentCourses.getColumnIndex(DBConnHelper.COURSE_NOTES));
-        allAssessmentsForCourse = getAssessmentsForSelectedCourse(allCurrentCourses.getInt(allCurrentCourses.getColumnIndex(DBConnHelper.FK_Assessment_ID)));
+        allAssessmentsForCourse = getAssessmentsForSelectedCourse(allCurrentCourses.getInt(allCurrentCourses.getColumnIndex(DBConnHelper.PK_COURSE_ID)));
 
         if(allAssessmentsForCourse.isEmpty()){return new Courses(title, start, end, status, mentorN, mentorE, mentorP,
                 notesTaken, start + " - " + end);}
@@ -261,8 +342,15 @@ public class termAddActivity extends AppCompatActivity {
 
     private ArrayList<Assessment> getAssessmentsForSelectedCourse(Integer courseKey) throws ParseException {
         Cursor allAssessments = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_ID),
-                DBConnHelper.ASSESSMENTS_ALL_COLUMNS, "Where " + DBConnHelper.FK_COURSE_ID + " = " + courseKey, null,
+                DBConnHelper.ASSESSMENTS_ALL_COLUMNS, null, null,
                 null);
+        Cursor allAssociatedAssessments = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_IN_COURSES_ID),
+                DBConnHelper.TABLE_ASSESSMENTS_IN_COURSES_ALL_COLUMNS, "Where " + DBConnHelper.FK_COURSE_ID_ASSESSMENTS + " = " + courseKey,
+                null,null);
+
+        allAssessments.moveToNext();
+        allAssociatedAssessments.moveToNext();
+
         ArrayList<Assessment> allAssessmentsForCourse = new ArrayList<>();
         String title;
         Boolean isObjective, isPerformance;
@@ -271,12 +359,19 @@ public class termAddActivity extends AppCompatActivity {
 
         allAssessments.moveToFirst();
         while(allAssessments.moveToNext()){
-            title = allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_TITLE));
-            isObjective = Boolean.parseBoolean(allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_ISOBJECTIVE)));
-            isPerformance = Boolean.parseBoolean(allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_ISPERFORMANCE)));
-            goalDate = df.parse(allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_GOAL_DATE)));
+            while(allAssociatedAssessments.moveToNext()){
+                if(allAssociatedAssessments.getString(allAssociatedAssessments.getColumnIndex(DBConnHelper.FK_COURSE_ID_ASSESSMENTS)).equals(
+                        allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.FK_COURSE_ID_ASSESSMENTS)))){
 
-            allAssessmentsForCourse.add(new Assessment(title,isObjective,isPerformance,goalDate));
+                    title = allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_TITLE));
+                    isObjective = Boolean.parseBoolean(allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_ISOBJECTIVE)));
+                    isPerformance = Boolean.parseBoolean(allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_ISPERFORMANCE)));
+                    goalDate = df.parse(allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_GOAL_DATE)));
+
+                    allAssessmentsForCourse.add(new Assessment(title,isObjective,isPerformance,goalDate));
+                }
+            }
+            allAssociatedAssessments.moveToFirst();
         }
         return allAssessmentsForCourse;
 

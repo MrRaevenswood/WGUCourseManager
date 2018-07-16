@@ -115,7 +115,7 @@ public class CourseAddActivity extends AppCompatActivity{
 
             for(Assessment A : newCourse.getObjectiveAssessment()){
 
-                values.put(DBConnHelper.FK_Assessment_ID,getAssessmentKey(A.getAssessmentTitle()));
+                //values.put(DBConnHelper.FK_Assessment_ID,getAssessmentKey(A.getAssessmentTitle()));
 
             }
 
@@ -123,7 +123,7 @@ public class CourseAddActivity extends AppCompatActivity{
                 && !newCourse.getPerformanceAssessment().isEmpty()){
 
             for(Assessment A : newCourse.getPerformanceAssessment()){
-                values.put(DBConnHelper.FK_Assessment_ID, getAssessmentKey(A.getAssessmentTitle()));
+                //values.put(DBConnHelper.FK_Assessment_ID, getAssessmentKey(A.getAssessmentTitle()));
             }
 
         }

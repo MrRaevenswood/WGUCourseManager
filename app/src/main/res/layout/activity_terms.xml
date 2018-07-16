@@ -14,7 +14,10 @@
         android:layout_margin="@dimen/fab_margin"
         android:tint="@android:color/background_light"
         app:backgroundTint="@color/colorPrimary"
-        app:srcCompat="@android:drawable/ic_input_add" />
+        app:srcCompat="@android:drawable/ic_input_add"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:clickable="true"/>
 
 
     <android.support.design.widget.FloatingActionButton
@@ -27,7 +30,9 @@
         android:tint="@android:color/background_light"
         android:translationY="-75dp"
         app:backgroundTint="@color/colorPrimaryDark"
-        android:src="@android:drawable/ic_menu_directions" />
+        android:src="@android:drawable/ic_menu_directions"
+        android:focusable="false"
+        android:focusableInTouchMode="false" />
 
     <TextView
         android:id="@+id/goToCoursesLabel"
@@ -38,7 +43,10 @@
         android:layout_margin="16dp"
         android:text="Go To Courses"
         android:textAlignment="textEnd"
-        android:translationX="-75dp" />
+        android:translationX="-75dp"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:clickable="false"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/goToAssess"
@@ -50,7 +58,9 @@
         android:src="@android:drawable/ic_menu_directions"
         android:tint="@android:color/background_light"
         android:translationY="-150dp"
-        app:backgroundTint="@color/colorPrimaryDark"/>
+        app:backgroundTint="@color/colorPrimaryDark"
+        android:focusable="false"
+        android:focusableInTouchMode="false" />
 
     <TextView
         android:id="@+id/textView20"
@@ -61,7 +71,10 @@
         android:translationX="-75dp"
         android:layout_gravity="bottom|end"
         android:translationY="-160dp"
-        android:layout_margin="16dp"/>
+        android:layout_margin="16dp"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:clickable="false"/>
 
     <TextView
         android:id="@+id/textView17"
@@ -71,7 +84,10 @@
         android:text="Your Current Terms"
         android:textAlignment="textEnd"
         android:textSize="24sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:clickable="false"/>
 
     <ListView
         android:id="@android:id/list"
