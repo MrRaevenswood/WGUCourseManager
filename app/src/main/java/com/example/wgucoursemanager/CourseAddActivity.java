@@ -35,6 +35,7 @@ import android.R.*;
 
 import org.w3c.dom.Text;
 
+import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -53,6 +54,8 @@ public class CourseAddActivity extends AppCompatActivity{
     private static TextView mentorEmail;
     private static TextView mentorPhone;
     private static TextView notes;
+    private Bundle activityBundle;
+    private int courseIdToUpdate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -67,6 +70,23 @@ public class CourseAddActivity extends AppCompatActivity{
         mentorEmail = findViewById(R.id.mentorEmail);
         mentorPhone = findViewById(R.id.mentorPhone);
         notes = findViewById(R.id.notes);
+
+        activityBundle = getIntent().getExtras();
+
+        if(activityBundle.get("Edit") != null){
+            ArrayList<String> courseData = activityBundle.getStringArrayList("selectedCourse");
+
+            courseTitle.setText(courseData.get(1));
+            courseStart.setText(courseData.get(2));
+            courseEnd.setText(courseData.get(3));
+            status.setText(courseData.get(4));
+            mentorName.setText(courseData.get(5));
+            mentorEmail.setText(courseData.get(6));
+            mentorPhone.setText(courseData.get(7));
+            notes.setText(courseData.get(8));
+
+            courseIdToUpdate = Integer.parseInt(courseData.get(0));
+        }
 
         Toolbar actionBar = findViewById(R.id.toolbar);
         actionBar.setTitle("Add/Edit Course");
@@ -84,7 +104,12 @@ public class CourseAddActivity extends AppCompatActivity{
     public boolean onOptionsItemSelected(MenuItem item){
         switch (item.getItemId()){
             case R.id.save:
+                if(activityBundle.get("Edit") != null){
+                    promptToUpdateAssessments();
+                }else{
                     promptToAddAssessments();
+                }
+
                 break;
             case R.id.cancel:
                 Intent goBackToCourses = new Intent(CourseAddActivity.this, CourseActivity.class );
@@ -93,6 +118,71 @@ public class CourseAddActivity extends AppCompatActivity{
         }
 
         return false;
+    }
+
+    private void promptToUpdateAssessments() {
+
+        AlertDialog.Builder updateAssessments = new AlertDialog.Builder(this);
+        updateAssessments.setTitle("Update Assessments?");
+
+        updateAssessments.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                ContentValues values = new ContentValues();
+
+                values.put(DBConnHelper.COURSE_TITLE, courseTitle.getText().toString());
+                values.put(DBConnHelper.COURSE_START, courseStart.getText().toString());
+                values.put(DBConnHelper.COURSE_END, courseEnd.getText().toString());
+                values.put(DBConnHelper.COURSE_START, status.getText().toString());
+                values.put(DBConnHelper.COURSE_MENTOR_NAME, mentorName.getText().toString());
+                values.put(DBConnHelper.COURSE_MENTOR_EMAIL, mentorEmail.getText().toString());
+                values.put(DBConnHelper.COURSE_MENTOR_PHONE, mentorPhone.getText().toString());
+                values.put(DBConnHelper.COURSE_NOTES, notes.getText().toString());
+                values.put(DBConnHelper.COURSE_RANGE, courseStart.getText().toString() + " - "
+                    + courseEnd.getText().toString());
+
+                getContentResolver().update(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSE_ID),
+                        values, DBConnHelper.PK_COURSE_ID + " = " + courseIdToUpdate, null);
+                setResult(RESULT_OK);
+                finish();
+            }
+        });
+
+        updateAssessments.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                ArrayList<String> selectedAssessmentIds = new ArrayList<>();
+
+
+                Cursor allAssessmentsForCourse = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_IN_COURSES_ID),
+                        DBConnHelper.TABLE_ASSESSMENTS_IN_COURSES_ALL_COLUMNS, "Where " + DBConnHelper.FK_COURSE_ID_ASSESSMENTS + " = " + courseIdToUpdate,
+                        null, null);
+
+                allAssessmentsForCourse.moveToFirst();
+                do{
+                    selectedAssessmentIds.add(allAssessmentsForCourse.getString(allAssessmentsForCourse.getColumnIndex(DBConnHelper.FK_ASSESSMENTS_ID_IN_COURSES)));
+                }while(allAssessmentsForCourse.moveToNext());
+
+                ArrayList<String> selectedObjective = new ArrayList<>();
+                ArrayList<String> selectedPerformance = new ArrayList<>();
+
+                Cursor allAssessments = getAllCurrentAssessments();
+                allAssessments.moveToFirst();
+                do{
+                    for(String id: selectedAssessmentIds){
+                        if(allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.PK_Assessment_ID)).equals(id)){
+                            if(allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_ISPERFORMANCE)).toLowerCase().equals("true")){
+                                selectedPerformance.add(allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_TITLE)));
+                            }else{
+                                selectedObjective.add(allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_TITLE)));
+                            }
+                        }
+                    }
+                }while(allAssessments.moveToNext());
+
+                openAssessmentDialog(selectedObjective, selectedPerformance);
+            }
+        });
     }
 
     private void saveCourse(Courses newCourse) {
@@ -108,14 +198,17 @@ public class CourseAddActivity extends AppCompatActivity{
         values.put(DBConnHelper.COURSE_MENTOR_PHONE, newCourse.getMentorPhone());
         values.put(DBConnHelper.COURSE_NOTES, newCourse.getNotes());
 
+        getContentResolver().insert(Uri.parse(WGUProvider.CONTENT_URI + "/" +
+                WGUProvider.COURSE_ID), values);
 
+        ContentValues assessmentValues = new ContentValues();
 
         if(!newCourse.getObjectiveAssessment().isEmpty()
                 && newCourse.getPerformanceAssessment().isEmpty()){
 
             for(Assessment A : newCourse.getObjectiveAssessment()){
 
-                //values.put(DBConnHelper.FK_Assessment_ID,getAssessmentKey(A.getAssessmentTitle()));
+                assessmentValues.put(DBConnHelper.FK_ASSESSMENTS_ID_IN_COURSES,getAssessmentKey(A.getAssessmentTitle()));
 
             }
 
@@ -123,15 +216,16 @@ public class CourseAddActivity extends AppCompatActivity{
                 && !newCourse.getPerformanceAssessment().isEmpty()){
 
             for(Assessment A : newCourse.getPerformanceAssessment()){
-                //values.put(DBConnHelper.FK_Assessment_ID, getAssessmentKey(A.getAssessmentTitle()));
+                assessmentValues.put(DBConnHelper.FK_ASSESSMENTS_ID_IN_COURSES, getAssessmentKey(A.getAssessmentTitle()));
             }
 
         }
 
+        if(assessmentValues.size() > 0){
+            getContentResolver().insert(Uri.parse(WGUProvider.CONTENT_URI + "/" +
+                    WGUProvider.ASSESSMENTS_IN_COURSES_ID), assessmentValues);
+        }
 
-
-        getContentResolver().insert(Uri.parse(WGUProvider.CONTENT_URI + "/" +
-                WGUProvider.COURSE_ID), values);
         setResult(RESULT_OK);
         finish();
 
@@ -145,7 +239,7 @@ public class CourseAddActivity extends AppCompatActivity{
         addAssessment.setPositiveButton("YES", new AlertDialog.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                openAssessmentDialog();
+                openAssessmentDialog(null, null);
             }
         });
 
@@ -312,7 +406,7 @@ public class CourseAddActivity extends AppCompatActivity{
         popup.show();
     }
 
-    private void openAssessmentDialog() {
+    private void openAssessmentDialog(ArrayList<String> selectedObjective, ArrayList<String> selectedPerformance) {
 
         //AlertDialog.Builder populateAssessments = new AlertDialog.Builder(this);
         //populateAssessments.setTitle("Choose your one objective or performance of Both");
@@ -324,26 +418,33 @@ public class CourseAddActivity extends AppCompatActivity{
         ArrayList<String> objectiveAssessmentTitles = new ArrayList<>();
 
         Cursor assignmentsToPopulate = getAllCurrentAssessments();
-        while(assignmentsToPopulate.moveToNext()){
 
-            String currentTitle = assignmentsToPopulate.getString(
-                    assignmentsToPopulate.getColumnIndex(DBConnHelper.ASSESSMENT_TITLE)
-            );
+        if(selectedObjective.isEmpty() && selectedPerformance.isEmpty()){
+            while(assignmentsToPopulate.moveToNext()){
 
-            String isPerformance = assignmentsToPopulate.getString(
-                    assignmentsToPopulate.getColumnIndex(DBConnHelper.ASSESSMENT_ISPERFORMANCE)).
-                    toLowerCase();
+                String currentTitle = assignmentsToPopulate.getString(
+                        assignmentsToPopulate.getColumnIndex(DBConnHelper.ASSESSMENT_TITLE)
+                );
 
-            if(isPerformance.equals("1") && !currentTitle.isEmpty()){
+                String isPerformance = assignmentsToPopulate.getString(
+                        assignmentsToPopulate.getColumnIndex(DBConnHelper.ASSESSMENT_ISPERFORMANCE)).
+                        toLowerCase();
 
-                performanceAssessmentTitles.add(currentTitle);
+                if(isPerformance.equals("1") && !currentTitle.isEmpty()){
 
-            }else if(isPerformance.equals("0") && !currentTitle.isEmpty()){
+                    performanceAssessmentTitles.add(currentTitle);
 
-                objectiveAssessmentTitles.add(currentTitle);
+                }else if(isPerformance.equals("0") && !currentTitle.isEmpty()){
+
+                    objectiveAssessmentTitles.add(currentTitle);
+                }
+
             }
-
+        }else{
+            performanceAssessmentTitles = selectedPerformance;
+            objectiveAssessmentTitles = selectedObjective;
         }
+
 
         showPopupWindow(performanceAssessmentTitles, objectiveAssessmentTitles);
         /*
