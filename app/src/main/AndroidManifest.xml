@@ -64,7 +64,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.wgucoursemanager.CourseActivity" />
         </activity>
-        <activity android:name=".AssessmentAddActivity"></activity>
+        <activity
+            android:name=".AssessmentAddActivity"
+            android:theme = "@style/AppTheme.NoActionBar">
+        </activity>
     </application>
 
 </manifest>

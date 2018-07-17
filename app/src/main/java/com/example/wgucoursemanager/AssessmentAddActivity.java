@@ -52,8 +52,13 @@ public class AssessmentAddActivity extends AppCompatActivity {
         if(activityBundle.get("Edit") != null){
             ArrayList<String> assessmentData = activityBundle.getStringArrayList("selectedAssessment");
             assessmentTitle.setText(assessmentData.get(1));
-            isObjective.setText(assessmentData.get(2));
-            isPerformance.setText(assessmentData.get(3));
+            if(assessmentData.get(2) == "0"){
+                isObjective.setChecked(false);
+                isPerformance.setChecked(true);
+            }else if (assessmentData.get(3) == "0"){
+                isObjective.setChecked(true);
+                isPerformance.setChecked(false);
+            }
             goalDate.setText(assessmentData.get(4));
 
             assessmentIdToUpdate = Integer.parseInt(assessmentData.get(0));
@@ -76,26 +81,17 @@ public class AssessmentAddActivity extends AppCompatActivity {
         switch (item.getItemId()){
             case R.id.save:
 
-                SimpleDateFormat df = new SimpleDateFormat("MM/DD/YYYY");
                 String selectedGoalDate = goalDate.getText().toString();
-                Date newSelectedGoalDate = df.parse(selectedGoalDate);
-
                 String title = assessmentTitle.getText().toString();
                 Boolean isObj = isObjective.isChecked();
                 Boolean isPerf = isPerformance.isChecked();
 
-                Assessment newAssessment = new Assessment(title, isObj, isPerf, newSelectedGoalDate);
-
+                Assessment newAssessment = new Assessment(title, isObj, isPerf, selectedGoalDate);
                 if(activityBundle.get("Edit") != null){
                     updateAssessment(newAssessment);
                 }else{
-                    try {
-                        saveAssessment(newAssessment);
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
+                    saveAssessment(newAssessment);
                 }
-
 
                 break;
             case R.id.cancel:

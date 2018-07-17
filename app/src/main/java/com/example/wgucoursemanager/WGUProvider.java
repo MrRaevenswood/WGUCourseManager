@@ -71,7 +71,7 @@ public class WGUProvider extends ContentProvider {
                         selection,selectionArgs,null,null, sortOrder);
             case COURSES_WITH_ASSESSMENTS_ID:
                 return database.query(DBConnHelper.TABLE_ASSESSMENTS_IN_COURSES, projection,
-                        selection,selection, null, null, sortOrder);
+                        selection,selectionArgs, null, null, sortOrder);
         }
 
         return null;

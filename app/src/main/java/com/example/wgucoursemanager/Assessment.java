@@ -7,10 +7,10 @@ public class Assessment{
     private String title;
     private Boolean isObjective;
     private Boolean isPerformance;
-    private Date goalDate;
+    private String goalDate;
 
     public Assessment(String title, Boolean isObjective,
-                      Boolean isPerformance, Date goalDate){
+                      Boolean isPerformance, String goalDate){
 
         this.title = title;
         this.isObjective = isObjective;
@@ -31,7 +31,7 @@ public class Assessment{
         return isPerformance;
     }
 
-    public Date getGoalDate() {
+    public String getGoalDate() {
         return goalDate;
     }
 
@@ -47,7 +47,7 @@ public class Assessment{
         this.isPerformance = isPerformance;
     }
 
-    public void setGoalDate(Date goalDate){
+    public void setGoalDate(String goalDate){
         this.goalDate = goalDate;
     }
 

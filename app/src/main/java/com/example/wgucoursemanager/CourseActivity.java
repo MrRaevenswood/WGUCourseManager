@@ -101,7 +101,7 @@ public class CourseActivity extends ListActivity
 
                String selectedCourse = selectedCourseFromList.getString(1);
                Intent editCourse = new Intent(CourseActivity.this, CourseAddActivity.class);
-               editCourse.putExtra(new "Edit", 1);
+               editCourse.putExtra( "Edit", 1);
                editCourse.putStringArrayListExtra("selectedCourse", getCourseData(selectedCourse));
                startActivityForResult(editCourse, ADD_COURSE_CODE);
            }
@@ -116,7 +116,7 @@ public class CourseActivity extends ListActivity
                String selectedCourseDataId = getCourseData(selectedCourseData).get(0);
 
                getContentResolver().delete(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSE_ID),
-                       DBConnHelper.PK_COURSE_ID + " = " selectedCourseDataId, null);
+                       DBConnHelper.PK_COURSE_ID + " = " + selectedCourseDataId, null);
                getContentResolver().delete(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSES_IN_TERM_ID),
                        DBConnHelper.FK_COURSE_ID_TERMS + " = " + selectedCourseDataId, null);
                getContentResolver().delete(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSES_WITH_ASSESSMENTS_ID),

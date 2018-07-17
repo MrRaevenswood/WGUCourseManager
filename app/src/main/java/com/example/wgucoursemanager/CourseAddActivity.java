@@ -562,11 +562,8 @@ public class CourseAddActivity extends AppCompatActivity{
         selectedGoalDate = allCurrentAssessments.getString(
                 allCurrentAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_GOAL_DATE));
 
-        SimpleDateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
-        Date newselectedGoalDate = df.parse(selectedGoalDate);
-
         return new Assessment(selectedTitle, selectedIsObjective,
-                selectedIsPerformance, newselectedGoalDate);
+                selectedIsPerformance, selectedGoalDate);
     }
 
     public void showStartDatePickerDialog(View view){

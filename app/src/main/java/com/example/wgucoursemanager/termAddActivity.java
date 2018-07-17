@@ -356,8 +356,7 @@ public class termAddActivity extends AppCompatActivity {
         ArrayList<Assessment> allAssessmentsForCourse = new ArrayList<>();
         String title;
         Boolean isObjective, isPerformance;
-        SimpleDateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy");
-        Date goalDate;
+        String goalDate;
 
         allAssessments.moveToFirst();
         while(allAssessments.moveToNext()){
@@ -368,7 +367,7 @@ public class termAddActivity extends AppCompatActivity {
                     title = allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_TITLE));
                     isObjective = Boolean.parseBoolean(allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_ISOBJECTIVE)));
                     isPerformance = Boolean.parseBoolean(allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_ISPERFORMANCE)));
-                    goalDate = df.parse(allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_GOAL_DATE)));
+                    goalDate = allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_GOAL_DATE));
 
                     allAssessmentsForCourse.add(new Assessment(title,isObjective,isPerformance,goalDate));
                 }
