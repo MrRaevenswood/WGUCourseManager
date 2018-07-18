@@ -155,7 +155,7 @@ public class CourseAddActivity extends AppCompatActivity{
 
 
                 Cursor allAssessmentsForCourse = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_IN_COURSES_ID),
-                        DBConnHelper.TABLE_ASSESSMENTS_IN_COURSES_ALL_COLUMNS, "Where " + DBConnHelper.FK_COURSE_ID_ASSESSMENTS + " = " + courseIdToUpdate,
+                        DBConnHelper.TABLE_ASSESSMENTS_IN_COURSES_ALL_COLUMNS, DBConnHelper.FK_COURSE_ID_ASSESSMENTS + " = " + courseIdToUpdate,
                         null, null);
 
                 allAssessmentsForCourse.moveToFirst();
@@ -183,6 +183,7 @@ public class CourseAddActivity extends AppCompatActivity{
                 openAssessmentDialog(selectedObjective, selectedPerformance);
             }
         });
+        updateAssessments.create().show();
     }
 
     private void saveCourse(Courses newCourse) {
@@ -315,7 +316,7 @@ public class CourseAddActivity extends AppCompatActivity{
                 ArrayList<String> assessmentContainer = new ArrayList<>();
                 ArrayList<Integer> assessmentKeys = new ArrayList<>();
                 for(CheckBox checkBox : generatedCheckBoxIds){
-                    if(checkBox.isSelected()){
+                    if(checkBox.isChecked()){
                         assessmentContainer.add(checkBox.getText().toString());
                     }
                 }
@@ -419,7 +420,7 @@ public class CourseAddActivity extends AppCompatActivity{
 
         Cursor assignmentsToPopulate = getAllCurrentAssessments();
 
-        if(selectedObjective.isEmpty() && selectedPerformance.isEmpty()){
+        if(selectedObjective == null && selectedPerformance == null){
             while(assignmentsToPopulate.moveToNext()){
 
                 String currentTitle = assignmentsToPopulate.getString(
@@ -507,7 +508,7 @@ public class CourseAddActivity extends AppCompatActivity{
     private Integer getAssessmentKey(String assessmentTitle) {
 
         Cursor assessmentKey = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_ID),
-                new String[]{DBConnHelper.PK_Assessment_ID}, "Where " + DBConnHelper.ASSESSMENT_TITLE + "= " + assessmentTitle,
+                new String[]{DBConnHelper.PK_Assessment_ID}, DBConnHelper.ASSESSMENT_TITLE + "= " +  "\"" + assessmentTitle + "\"",
                 null, null);
         assessmentKey.moveToFirst();
 
@@ -546,7 +547,7 @@ public class CourseAddActivity extends AppCompatActivity{
         String selectedTitle, selectedGoalDate;
         Boolean selectedIsObjective, selectedIsPerformance;
         allCurrentAssessments  = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_ID),
-                   null, "Where " + DBConnHelper.PK_Assessment_ID + " = " + position, null, null);
+                   null, DBConnHelper.PK_Assessment_ID + " = " + position, null, null);
 
         allCurrentAssessments.moveToFirst();
 

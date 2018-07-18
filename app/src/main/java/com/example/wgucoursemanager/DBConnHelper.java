@@ -74,8 +74,8 @@ public class DBConnHelper extends SQLiteOpenHelper{
             "CREATE TABLE " + TABLE_ASSESSMENTS + " (" +
                     PK_Assessment_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     ASSESSMENT_TITLE + " TEXT, " +
-                    ASSESSMENT_ISOBJECTIVE + " BOOLEAN, " +
-                    ASSESSMENT_ISPERFORMANCE + " BOOLEAN, " +
+                    ASSESSMENT_ISOBJECTIVE + " BIT, " +
+                    ASSESSMENT_ISPERFORMANCE + " BIT, " +
                     ASSESSMENT_GOAL_DATE + " DATETIME" + ")";
 
     //Create Course Table

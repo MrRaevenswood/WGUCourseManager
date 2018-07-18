@@ -38,6 +38,8 @@ public class WGUProvider extends ContentProvider {
         uriMatcher.addURI(AUTHORITY, BASE_PATH + "/" + TERMS_ID, TERMS_ID);
         uriMatcher.addURI(AUTHORITY, BASE_PATH + "/" + COURSE_ID, COURSE_ID);
         uriMatcher.addURI(AUTHORITY, BASE_PATH + "/" + ASSESSMENTS_ID, ASSESSMENTS_ID);
+        uriMatcher.addURI(AUTHORITY, BASE_PATH + "/" + ASSESSMENTS_IN_COURSES_ID, ASSESSMENTS_IN_COURSES_ID);
+        uriMatcher.addURI(AUTHORITY, BASE_PATH + "/" + COURSES_WITH_ASSESSMENTS_ID, COURSES_WITH_ASSESSMENTS_ID);
     }
 
     private SQLiteDatabase database;
