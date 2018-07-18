@@ -52,10 +52,10 @@ public class AssessmentAddActivity extends AppCompatActivity {
         if(activityBundle.get("Edit") != null){
             ArrayList<String> assessmentData = activityBundle.getStringArrayList("selectedAssessment");
             assessmentTitle.setText(assessmentData.get(1));
-            if(assessmentData.get(2) == "0"){
+            if(assessmentData.get(2).equals("0")){
                 isObjective.setChecked(false);
                 isPerformance.setChecked(true);
-            }else if (assessmentData.get(3) == "0"){
+            }else if (assessmentData.get(3).equals("0")){
                 isObjective.setChecked(true);
                 isPerformance.setChecked(false);
             }
