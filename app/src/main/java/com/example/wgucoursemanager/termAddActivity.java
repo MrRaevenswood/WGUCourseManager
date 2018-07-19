@@ -117,11 +117,11 @@ public class termAddActivity extends AppCompatActivity {
                 ArrayList<String> selectedCourseIds = new ArrayList<>();
                 ArrayList<String> selectedCourseTitles = new ArrayList<>();
                 Cursor allCoursesThisTerm = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + DBConnHelper.COURSES_IN_TERM_ID),
-                        DBConnHelper.COURSES_IN_TERM_ALL_COLUMNS, "Where " + DBConnHelper.FK_TERM_ID + " = " + termIdToUpdate, null, null);
+                        DBConnHelper.COURSES_IN_TERM_ALL_COLUMNS, DBConnHelper.FK_TERM_ID + " = " + termIdToUpdate, null, null);
                 allCoursesThisTerm.moveToFirst();
-                do{
+                while(allCoursesThisTerm.moveToNext()){
                     selectedCourseIds.add(allCoursesThisTerm.getString(allCoursesThisTerm.getColumnIndex(DBConnHelper.FK_COURSE_ID_TERMS)));
-                }while(allCoursesThisTerm.moveToNext());
+                }
 
                 Cursor allCourses = getAllCourses();
                 allCourses.moveToFirst();
@@ -225,8 +225,10 @@ public class termAddActivity extends AppCompatActivity {
             CheckBox performanceCheckBox = new CheckBox(to_add.getContext());
             performanceCheckBox.setId(View.generateViewId());
             performanceCheckBox.setText(p);
-            if(selectedCourses.indexOf(p) != -1 ){
-                performanceCheckBox.setChecked(true);
+            if(selectedCourses != null){
+                if(selectedCourses.indexOf(p) != -1 ){
+                    performanceCheckBox.setChecked(true);
+                }
             }
             to_add.addView(performanceCheckBox);
 
@@ -242,18 +244,20 @@ public class termAddActivity extends AppCompatActivity {
                 ArrayList<String> coursesContainer = new ArrayList<>();
                 ArrayList<Integer> coursesKeys = new ArrayList<>();
                 for(CheckBox checkBox : generatedCheckBoxIds){
-                    if(checkBox.isChecked() && selectedCourses.indexOf(checkBox.getText().toString()) == -1){
-                        coursesContainer.add(checkBox.getText().toString());
-                    }else if(!checkBox.isChecked() && selectedCourses.indexOf(checkBox.getText().toString()) != -1){
-                        Cursor courses = getAllCourses();
-                        courses.moveToFirst();
-                        do{
-                            if(courses.getString(courses.getColumnIndex(DBConnHelper.PK_COURSE_ID)).equals(checkBox.getText().toString())){
-                                getContentResolver().delete(Uri.parse(WGUProvider.CONTENT_URI + "/" + DBConnHelper.COURSES_IN_TERM_ID),
-                                        "Where " + DBConnHelper.FK_TERM_ID + " = " + termIdToUpdate + " AND " + DBConnHelper.FK_COURSE_ID_TERMS +
-                                                " = " + courses.getString(courses.getColumnIndex(DBConnHelper.PK_COURSE_ID)), null);
+                    if(selectedCourses != null){
+                        if(checkBox.isChecked() && selectedCourses.indexOf(checkBox.getText().toString()) == -1){
+                            coursesContainer.add(checkBox.getText().toString());
+                        }else if(!checkBox.isChecked() && selectedCourses.indexOf(checkBox.getText().toString()) != -1){
+                            Cursor courses = getAllCourses();
+                            courses.moveToFirst();
+                            while(courses.moveToNext()){
+                                if(courses.getString(courses.getColumnIndex(DBConnHelper.PK_COURSE_ID)).equals(checkBox.getText().toString())){
+                                    getContentResolver().delete(Uri.parse(WGUProvider.CONTENT_URI + "/" + DBConnHelper.COURSES_IN_TERM_ID),
+                                            DBConnHelper.FK_TERM_ID + " = " + termIdToUpdate + " AND " + DBConnHelper.FK_COURSE_ID_TERMS +
+                                                    " = " + courses.getString(courses.getColumnIndex(DBConnHelper.PK_COURSE_ID)), null);
+                                }
                             }
-                        }while(courses.moveToNext());
+                        }
                     }
                 }
                 for (String courses : coursesContainer){
@@ -347,7 +351,7 @@ public class termAddActivity extends AppCompatActivity {
                 DBConnHelper.ASSESSMENTS_ALL_COLUMNS, null, null,
                 null);
         Cursor allAssociatedAssessments = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_IN_COURSES_ID),
-                DBConnHelper.TABLE_ASSESSMENTS_IN_COURSES_ALL_COLUMNS, "Where " + DBConnHelper.FK_COURSE_ID_ASSESSMENTS + " = " + courseKey,
+                DBConnHelper.TABLE_ASSESSMENTS_IN_COURSES_ALL_COLUMNS, DBConnHelper.FK_COURSE_ID_ASSESSMENTS + " = " + courseKey,
                 null,null);
 
         allAssessments.moveToNext();
@@ -380,7 +384,7 @@ public class termAddActivity extends AppCompatActivity {
 
     private Integer getCoursesKey(String courseTitle) {
         Cursor coursesKey = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSE_ID),
-                new String[]{DBConnHelper.PK_COURSE_ID}, "Where " + DBConnHelper.COURSE_TITLE + "= " + courseTitle, null,
+                new String[]{DBConnHelper.PK_COURSE_ID}, DBConnHelper.COURSE_TITLE + "= " + courseTitle, null,
                 null);
         coursesKey.moveToFirst();
         return coursesKey.getInt(0);
