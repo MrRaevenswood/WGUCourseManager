@@ -159,9 +159,9 @@ public class CourseAddActivity extends AppCompatActivity{
                         null, null);
 
                 allAssessmentsForCourse.moveToFirst();
-                do{
+                while(allAssessmentsForCourse.moveToNext()){
                     selectedAssessmentIds.add(allAssessmentsForCourse.getString(allAssessmentsForCourse.getColumnIndex(DBConnHelper.FK_ASSESSMENTS_ID_IN_COURSES)));
-                }while(allAssessmentsForCourse.moveToNext());
+                }
 
                 ArrayList<String> selectedObjective = new ArrayList<>();
                 ArrayList<String> selectedPerformance = new ArrayList<>();
@@ -202,7 +202,13 @@ public class CourseAddActivity extends AppCompatActivity{
         getContentResolver().insert(Uri.parse(WGUProvider.CONTENT_URI + "/" +
                 WGUProvider.COURSE_ID), values);
 
+        Cursor courseIdCursor = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSE_ID),
+                new String[]{DBConnHelper.PK_COURSE_ID}, null, null, DBConnHelper.PK_COURSE_ID + " DESC");
+        courseIdCursor.moveToFirst();
+        int courseId = courseIdCursor.getInt(0);
+
         ContentValues assessmentValues = new ContentValues();
+        assessmentValues.put(DBConnHelper.FK_COURSE_ID_ASSESSMENTS, courseId);
 
         if(!newCourse.getObjectiveAssessment().isEmpty()
                 && newCourse.getPerformanceAssessment().isEmpty()){
@@ -289,7 +295,9 @@ public class CourseAddActivity extends AppCompatActivity{
             performanceCheckBox.setId(View.generateViewId());
             performanceCheckBox.setText(p);
             to_add.addView(performanceCheckBox);
-
+            if(performance.contains(p)){
+                performanceCheckBox.setChecked(true);
+            }
             generatedCheckBoxIds.add(performanceCheckBox);
         }
 
@@ -303,7 +311,9 @@ public class CourseAddActivity extends AppCompatActivity{
             objectiveCheckBox.setId(View.generateViewId());
             objectiveCheckBox.setText(o);
             to_add.addView(objectiveCheckBox);
-
+            if(objective.contains(o)){
+                objectiveCheckBox.setChecked(true);
+            }
             generatedCheckBoxIds.add(objectiveCheckBox);
         }
 
@@ -545,20 +555,22 @@ public class CourseAddActivity extends AppCompatActivity{
 
         Cursor allCurrentAssessments;
         String selectedTitle, selectedGoalDate;
-        Boolean selectedIsObjective, selectedIsPerformance;
+        Boolean selectedIsObjective = false;
+        Boolean selectedIsPerformance = false;
         allCurrentAssessments  = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_ID),
-                   null, DBConnHelper.PK_Assessment_ID + " = " + position, null, null);
+                DBConnHelper.ASSESSMENTS_ALL_COLUMNS, DBConnHelper.PK_Assessment_ID + " = " + position, null, null);
 
         allCurrentAssessments.moveToFirst();
 
         selectedTitle = allCurrentAssessments.getString(
                 allCurrentAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_TITLE));
 
-        selectedIsObjective = Boolean.parseBoolean(allCurrentAssessments.getString(
-                allCurrentAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_ISOBJECTIVE)));
-
-        selectedIsPerformance = Boolean.parseBoolean(allCurrentAssessments.getString(
-                allCurrentAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_ISPERFORMANCE)));
+        if(allCurrentAssessments.getString(
+                allCurrentAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_ISPERFORMANCE)) == "1"){
+            selectedIsPerformance = true;
+        }else{
+            selectedIsObjective = true;
+        }
 
         selectedGoalDate = allCurrentAssessments.getString(
                 allCurrentAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_GOAL_DATE));
