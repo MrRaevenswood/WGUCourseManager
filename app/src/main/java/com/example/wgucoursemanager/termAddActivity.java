@@ -116,16 +116,16 @@ public class termAddActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
                 ArrayList<String> selectedCourseIds = new ArrayList<>();
                 ArrayList<String> selectedCourseTitles = new ArrayList<>();
-                Cursor allCoursesThisTerm = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + DBConnHelper.COURSES_IN_TERM_ID),
+                Cursor allCoursesThisTerm = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSES_IN_TERM_ID),
                         DBConnHelper.COURSES_IN_TERM_ALL_COLUMNS, DBConnHelper.FK_TERM_ID + " = " + termIdToUpdate, null, null);
                 allCoursesThisTerm.moveToFirst();
-                while(allCoursesThisTerm.moveToNext()){
+                do{
                     selectedCourseIds.add(allCoursesThisTerm.getString(allCoursesThisTerm.getColumnIndex(DBConnHelper.FK_COURSE_ID_TERMS)));
-                }
+                }while(allCoursesThisTerm.moveToNext());
 
                 Cursor allCourses = getAllCourses();
                 allCourses.moveToFirst();
-                do{
+                while(allCourses.moveToNext()){
                     for(String id : selectedCourseIds){
 
                         if(allCourses.getString(allCourses.getColumnIndex(DBConnHelper.PK_COURSE_ID)).equals(id)){
@@ -133,7 +133,7 @@ public class termAddActivity extends AppCompatActivity {
                             selectedCourseTitles.add(allCourses.getString(allCourses.getColumnIndex(DBConnHelper.COURSE_TITLE)));
                         }
                     }
-                }while(allCourses.moveToNext());
+                }
 
                 openCoursesDialog(selectedCourseTitles);
             }
@@ -153,7 +153,25 @@ public class termAddActivity extends AppCompatActivity {
 
         getContentResolver().insert(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.TERMS_ID), values);
 
+        Cursor termIdCursor = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.TERMS_ID),
+                new String[]{DBConnHelper.TERM_ID}, null, null, DBConnHelper.TERM_ID  + " DESC");
+        termIdCursor.moveToFirst();
+        int termId = termIdCursor.getInt(0);
+
+        ContentValues courseValues = new ContentValues();
+        courseValues.put(DBConnHelper.FK_TERM_ID, termId);
+
+        if(newTerm.getCourses().size() > 0) {
+            for (Courses c : newTerm.getCourses()) {
+                courseValues.put(DBConnHelper.FK_COURSE_ID_TERMS, getCoursesKey(c.getCourseTitle()));
+            }
+            if (courseValues.size() > 0) {
+                getContentResolver().insert(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSES_IN_TERM_ID),
+                        courseValues);
+            }
+        }
         setResult(RESULT_OK);
+
         finish();
 
     }
@@ -188,7 +206,7 @@ public class termAddActivity extends AppCompatActivity {
         addAssessment.create().show();
     }
 
-    private void openCoursesDialog(ArrayList<String> selectecCourses) {
+    private void openCoursesDialog(ArrayList<String> selectedCourses) {
         ArrayList<String> courses = new ArrayList<>();
         Cursor coursesToPopulate = getAllCourses();
         while(coursesToPopulate.moveToNext()){
@@ -196,10 +214,10 @@ public class termAddActivity extends AppCompatActivity {
                     coursesToPopulate.getColumnIndex(DBConnHelper.COURSE_TITLE)));
         }
 
-        showPopupWindow(courses, selectecCourses);
+        showPopupWindow(courses, selectedCourses);
     }
 
-    private void showPopupWindow(ArrayList<String> courses, final ArrayList<String> selectedCourses) {
+    private void showPopupWindow(ArrayList<String> courses, final ArrayList<String> coursesSelected) {
 
         ConstraintLayout to_add = findViewById(R.id.termAdd);
         ArrayList<View> viewsInOriginalLayout = new ArrayList<>();
@@ -225,8 +243,8 @@ public class termAddActivity extends AppCompatActivity {
             CheckBox performanceCheckBox = new CheckBox(to_add.getContext());
             performanceCheckBox.setId(View.generateViewId());
             performanceCheckBox.setText(p);
-            if(selectedCourses != null){
-                if(selectedCourses.indexOf(p) != -1 ){
+            if(coursesSelected != null){
+                if(coursesSelected.indexOf(p) != -1 ){
                     performanceCheckBox.setChecked(true);
                 }
             }
@@ -234,6 +252,8 @@ public class termAddActivity extends AppCompatActivity {
 
             generatedCheckBoxIds.add(performanceCheckBox);
         }
+
+
 
         Button addButton = new Button(to_add.getContext());
         addButton.setId(View.generateViewId());
@@ -244,10 +264,13 @@ public class termAddActivity extends AppCompatActivity {
                 ArrayList<String> coursesContainer = new ArrayList<>();
                 ArrayList<Integer> coursesKeys = new ArrayList<>();
                 for(CheckBox checkBox : generatedCheckBoxIds){
-                    if(selectedCourses != null){
-                        if(checkBox.isChecked() && selectedCourses.indexOf(checkBox.getText().toString()) == -1){
+
+                    if(checkBox.isChecked()){coursesContainer.add(checkBox.getText().toString());}
+/*
+                    if(coursesSelected != null){
+                        if(checkBox.isChecked() && coursesSelected.indexOf(checkBox.getText().toString()) == -1){
                             coursesContainer.add(checkBox.getText().toString());
-                        }else if(!checkBox.isChecked() && selectedCourses.indexOf(checkBox.getText().toString()) != -1){
+                        }else if(!checkBox.isChecked() && coursesSelected.indexOf(checkBox.getText().toString()) != -1){
                             Cursor courses = getAllCourses();
                             courses.moveToFirst();
                             while(courses.moveToNext()){
@@ -258,7 +281,7 @@ public class termAddActivity extends AppCompatActivity {
                                 }
                             }
                         }
-                    }
+                    }*/
                 }
                 for (String courses : coursesContainer){
                     coursesKeys.add(getCoursesKey(courses));
@@ -384,7 +407,8 @@ public class termAddActivity extends AppCompatActivity {
 
     private Integer getCoursesKey(String courseTitle) {
         Cursor coursesKey = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSE_ID),
-                new String[]{DBConnHelper.PK_COURSE_ID}, DBConnHelper.COURSE_TITLE + "= " + courseTitle, null,
+                new String[]{DBConnHelper.PK_COURSE_ID}, DBConnHelper.COURSE_TITLE + "= " + "\"" + courseTitle + "\""
+                , null,
                 null);
         coursesKey.moveToFirst();
         return coursesKey.getInt(0);

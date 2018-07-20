@@ -1,5 +1,6 @@
 package com.example.wgucoursemanager;
 
+import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.UriMatcher;
@@ -40,6 +41,7 @@ public class WGUProvider extends ContentProvider {
         uriMatcher.addURI(AUTHORITY, BASE_PATH + "/" + ASSESSMENTS_ID, ASSESSMENTS_ID);
         uriMatcher.addURI(AUTHORITY, BASE_PATH + "/" + ASSESSMENTS_IN_COURSES_ID, ASSESSMENTS_IN_COURSES_ID);
         uriMatcher.addURI(AUTHORITY, BASE_PATH + "/" + COURSES_WITH_ASSESSMENTS_ID, COURSES_WITH_ASSESSMENTS_ID);
+        uriMatcher.addURI(AUTHORITY, BASE_PATH + "/" + COURSES_IN_TERM_ID, COURSES_IN_TERM_ID);
     }
 
     private SQLiteDatabase database;
@@ -109,8 +111,10 @@ public class WGUProvider extends ContentProvider {
                 break;
             case ASSESSMENTS_IN_COURSES_ID:
                 id = database.insert(DBConnHelper.TABLE_ASSESSMENTS_IN_COURSES, null, values);
+                break;
             case COURSES_WITH_ASSESSMENTS_ID:
                 id = database.insert(DBConnHelper.TABLE_ASSESSMENTS_IN_COURSES, null, values);
+                break;
         }
 
         return Uri.parse(BASE_PATH + "/" + id);
