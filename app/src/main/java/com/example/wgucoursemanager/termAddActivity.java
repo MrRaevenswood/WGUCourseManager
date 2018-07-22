@@ -445,7 +445,8 @@ public class termAddActivity extends AppCompatActivity {
         Cursor matchingTermTitles = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.TERMS_ID),
                 null, DBConnHelper.TERM_TITLE + " = " + title.trim(), null, null );
 
-        if(!matchingTermTitles.moveToNext()){
+        if(!matchingTermTitles.moveToNext() || matchingTermTitles.getInt(matchingTermTitles.getColumnIndex(DBConnHelper.TERM_ID))
+                == termIdToUpdate ){
             return false;
         }else{
             return true;

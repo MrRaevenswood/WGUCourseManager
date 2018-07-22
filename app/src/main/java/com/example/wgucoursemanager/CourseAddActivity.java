@@ -138,11 +138,12 @@ public class CourseAddActivity extends AppCompatActivity{
         Cursor getAllCurrentCourses = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSE_ID),
                 DBConnHelper.COURSES_ALL_COLUMNS, DBConnHelper.COURSE_TITLE + " = " + "\"" + s.trim() + "\"",
                 null,null);
-        if(!getAllCurrentCourses.moveToNext()){
+        if(!getAllCurrentCourses.moveToNext() || getAllCurrentCourses.getInt(getAllCurrentCourses.getColumnIndex(DBConnHelper.PK_COURSE_ID))
+                == courseIdToUpdate){
             return false;
         }else{
             return true;
-        }]
+        }
     }
 
     private void promptToUpdateAssessments() {
@@ -177,35 +178,38 @@ public class CourseAddActivity extends AppCompatActivity{
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 ArrayList<String> selectedAssessmentIds = new ArrayList<>();
-
-
-                Cursor allAssessmentsForCourse = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_IN_COURSES_ID),
-                        DBConnHelper.TABLE_ASSESSMENTS_IN_COURSES_ALL_COLUMNS, DBConnHelper.FK_COURSE_ID_ASSESSMENTS + " = " + courseIdToUpdate,
-                        null, null);
-
-                allAssessmentsForCourse.moveToFirst();
-                while(allAssessmentsForCourse.moveToNext()){
-                    selectedAssessmentIds.add(allAssessmentsForCourse.getString(allAssessmentsForCourse.getColumnIndex(DBConnHelper.FK_ASSESSMENTS_ID_IN_COURSES)));
-                }
-
-                ArrayList<String> selectedObjective = new ArrayList<>();
-                ArrayList<String> selectedPerformance = new ArrayList<>();
-
-                Cursor allAssessments = getAllCurrentAssessments();
-                allAssessments.moveToFirst();
-                do{
-                    for(String id: selectedAssessmentIds){
-                        if(allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.PK_Assessment_ID)).equals(id)){
-                            if(allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_ISPERFORMANCE)).toLowerCase().equals("true")){
-                                selectedPerformance.add(allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_TITLE)));
-                            }else{
-                                selectedObjective.add(allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_TITLE)));
-                            }
+                try {
+                    ArrayList<String> selectedAssessmentTitles = getAllAssignedAssignments();
+                    if(selectedAssessmentTitles != null){
+                        for(String title : selectedAssessmentTitles){
+                            selectedAssessmentIds.add(getAssessmentKey(title).toString());
                         }
                     }
-                }while(allAssessments.moveToNext());
 
-                openAssessmentDialog(selectedObjective, selectedPerformance);
+                    ArrayList<String> selectedObjective = new ArrayList<>();
+                    ArrayList<String> selectedPerformance = new ArrayList<>();
+
+                    Cursor allAssessments = getAllCurrentAssessments();
+                    allAssessments.moveToFirst();
+                    do{
+                        for(String id: selectedAssessmentIds){
+                            String s = allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.PK_Assessment_ID));
+                            if(allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.PK_Assessment_ID)).equals(id)){
+                                if(allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_ISPERFORMANCE)).toLowerCase().equals("1")){
+                                    selectedPerformance.add(allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_TITLE)));
+                                }else{
+                                    selectedObjective.add(allAssessments.getString(allAssessments.getColumnIndex(DBConnHelper.ASSESSMENT_TITLE)));
+                                }
+                            }
+                        }
+                    }while(allAssessments.moveToNext());
+
+                    openAssessmentDialog(selectedObjective, selectedPerformance);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+
             }
         });
         updateAssessments.create().show();
@@ -259,7 +263,7 @@ public class CourseAddActivity extends AppCompatActivity{
 
         }
 
-        if(assessmentValues.size() > 0){
+        if(assessmentValues.size() > 1){
             getContentResolver().insert(Uri.parse(WGUProvider.CONTENT_URI + "/" +
                     WGUProvider.ASSESSMENTS_IN_COURSES_ID), assessmentValues);
         }
@@ -299,11 +303,13 @@ public class CourseAddActivity extends AppCompatActivity{
     }
 
     public void showPopupWindow(ArrayList<String> performance,
-                                ArrayList<String> objective){
+                                ArrayList<String> objective) throws ParseException {
 
         ConstraintLayout to_add = findViewById(R.id.courseAdd);
         ArrayList<View> viewsInOriginalLayout = new ArrayList<>();
         ArrayList<View> viewsInNewLayout = new ArrayList<>();
+
+        final ArrayList<String> currentlyAssignedAssessments = getAllAssignedAssignments();
 
         for( int i = 0; i < to_add.getChildCount(); i++){
             View v = to_add.getChildAt(i);
@@ -326,8 +332,12 @@ public class CourseAddActivity extends AppCompatActivity{
             performanceCheckBox.setId(View.generateViewId());
             performanceCheckBox.setText(p);
             to_add.addView(performanceCheckBox);
-            if(performance.contains(p)){
-                performanceCheckBox.setChecked(true);
+            if(currentlyAssignedAssessments != null){
+                for(String s : currentlyAssignedAssessments){
+                    if(s.equals(p)){
+                        performanceCheckBox.setChecked(true);
+                    }
+                }
             }
             generatedCheckBoxIds.add(performanceCheckBox);
         }
@@ -342,8 +352,12 @@ public class CourseAddActivity extends AppCompatActivity{
             objectiveCheckBox.setId(View.generateViewId());
             objectiveCheckBox.setText(o);
             to_add.addView(objectiveCheckBox);
-            if(objective.contains(o)){
-                objectiveCheckBox.setChecked(true);
+            if(currentlyAssignedAssessments != null){
+                for(String s : currentlyAssignedAssessments){
+                    if(s.equals(o)){
+                        objectiveCheckBox.setChecked(true);
+                    }
+                }
             }
             generatedCheckBoxIds.add(objectiveCheckBox);
         }
@@ -358,7 +372,37 @@ public class CourseAddActivity extends AppCompatActivity{
                 ArrayList<Integer> assessmentKeys = new ArrayList<>();
                 for(CheckBox checkBox : generatedCheckBoxIds){
                     if(checkBox.isChecked()){
-                        assessmentContainer.add(checkBox.getText().toString());
+                        if(courseIdToUpdate == -1) {
+                            assessmentContainer.add(checkBox.getText().toString());
+                        }else{
+                                int counter = 0;
+                                if(currentlyAssignedAssessments != null){
+                                    for(String title : currentlyAssignedAssessments) {
+                                        if(title.equals(checkBox.getText().toString())){
+                                            counter+= 1;
+                                        }
+                                    }
+                                    if(counter == 0) { assessmentContainer.add(checkBox.getText().toString());}
+                                }else{
+                                    assessmentContainer.add(checkBox.getText().toString());
+                                }
+
+                            }
+                    }else if(!checkBox.isChecked()){
+                        if(courseIdToUpdate != -1 && currentlyAssignedAssessments != null){
+                            int counter = 0;
+                            for(String title : currentlyAssignedAssessments) {
+                                if(title.equals(checkBox.getText().toString())){
+                                    counter+= 1;
+                                }
+                            }
+                            if(counter != 0){
+                                getContentResolver().delete(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_IN_COURSES_ID),
+                                        DBConnHelper.FK_ASSESSMENTS_ID_IN_COURSES + " = " + getAssessmentKey(checkBox.getText().toString())+
+                                                " AND " + DBConnHelper.FK_COURSE_ID_ASSESSMENTS +  " = " + courseIdToUpdate ,null);
+                            }
+
+                        }
                     }
                 }
                 for (String assessment : assessmentContainer){
@@ -402,6 +446,16 @@ public class CourseAddActivity extends AppCompatActivity{
                 move+= 100;
             }
         }
+    }
+
+    private boolean assessmentWasPreviouslyChecked(String assessmentTitle) {
+        int id = getAssessmentKey(assessmentTitle);
+
+        Cursor thisCourseWithThisAssessment = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "\"" + WGUProvider.ASSESSMENTS_IN_COURSES_ID),
+                DBConnHelper.TABLE_ASSESSMENTS_IN_COURSES_ALL_COLUMNS,DBConnHelper.FK_COURSE_ID_ASSESSMENTS + " = " + courseIdToUpdate +
+                " AND " + DBConnHelper.FK_ASSESSMENTS_ID_IN_COURSES + " = " + id,null,null);
+
+        return thisCourseWithThisAssessment == null;
     }
 
     public void showPopup(View v, ArrayList<String> performance,
@@ -460,9 +514,20 @@ public class CourseAddActivity extends AppCompatActivity{
         ArrayList<String> objectiveAssessmentTitles = new ArrayList<>();
 
         Cursor assignmentsToPopulate = getAllCurrentAssessments();
+        //String whichToPopulate = "";
 
-        if(selectedObjective == null && selectedPerformance == null){
-            while(assignmentsToPopulate.moveToNext()){
+        assignmentsToPopulate.moveToFirst();
+        /*
+        if(selectedPerformance.size() == 0 && selectedObjective.size() == 0) {
+            whichToPopulate = "Both";
+        }else if(selectedPerformance.size() == 0 && selectedObjective.size() > 0){
+            whichToPopulate = "Performance";
+        }else if(selectedObjective.size() == 0 && selectedPerformance.size() > 0){
+            whichToPopulate = "Objective";
+        }*/
+
+
+            do{
 
                 String currentTitle = assignmentsToPopulate.getString(
                         assignmentsToPopulate.getColumnIndex(DBConnHelper.ASSESSMENT_TITLE)
@@ -480,15 +545,14 @@ public class CourseAddActivity extends AppCompatActivity{
 
                     objectiveAssessmentTitles.add(currentTitle);
                 }
+            }while(assignmentsToPopulate.moveToNext());
 
-            }
-        }else{
-            performanceAssessmentTitles = selectedPerformance;
-            objectiveAssessmentTitles = selectedObjective;
+
+        try {
+            showPopupWindow(performanceAssessmentTitles, objectiveAssessmentTitles);
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
-
-
-        showPopupWindow(performanceAssessmentTitles, objectiveAssessmentTitles);
         /*
         populateAssessments.setView(LayoutInflater.from(getApplicationContext()).inflate(R.layout.custom_dropdown_dialog, null));
         performanceAssessmentTitles.setDropDownViewResource(R.layout.custom_dropdown_dialog);
@@ -546,6 +610,22 @@ public class CourseAddActivity extends AppCompatActivity{
                 null, null, null);
     }
 
+    public ArrayList<String> getAllAssignedAssignments() throws ParseException {
+        if(courseIdToUpdate == -1) {return null;}
+        Cursor getAssessments = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_IN_COURSES_ID),
+                DBConnHelper.TABLE_ASSESSMENTS_IN_COURSES_ALL_COLUMNS, DBConnHelper.FK_COURSE_ID_ASSESSMENTS + " = " + courseIdToUpdate, null, null);
+        ArrayList<String> selectedAssessments = new ArrayList<>();
+        if(getAssessments == null || getAssessments.getCount() == 0){return null;}
+        getAssessments.moveToFirst();
+        do{
+            String assessmentTitle = getAssessmentFromSelected(getAssessments.getInt(getAssessments.getColumnIndex(DBConnHelper.FK_ASSESSMENTS_ID_IN_COURSES))).getAssessmentTitle();
+            if(assessmentTitle != null){
+                selectedAssessments.add(assessmentTitle);
+            }
+        }while(getAssessments.moveToNext());
+        return selectedAssessments;
+    }
+
     private Integer getAssessmentKey(String assessmentTitle) {
 
         Cursor assessmentKey = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_ID),
@@ -584,12 +664,12 @@ public class CourseAddActivity extends AppCompatActivity{
     }
     private Assessment getAssessmentFromSelected(long position) throws ParseException {
 
-        Cursor allCurrentAssessments;
-        String selectedTitle, selectedGoalDate;
+        Cursor allCurrentAssessments = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_ID),
+                DBConnHelper.ASSESSMENTS_ALL_COLUMNS, DBConnHelper.PK_Assessment_ID + " = " + position,null, null);
+        String selectedTitle = ""
+                , selectedGoalDate = "";
         Boolean selectedIsObjective = false;
         Boolean selectedIsPerformance = false;
-        allCurrentAssessments  = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_ID),
-                DBConnHelper.ASSESSMENTS_ALL_COLUMNS, DBConnHelper.PK_Assessment_ID + " = " + position, null, null);
 
         allCurrentAssessments.moveToFirst();
 

@@ -152,7 +152,8 @@ public class AssessmentAddActivity extends AppCompatActivity {
                 DBConnHelper.ASSESSMENTS_ALL_COLUMNS, DBConnHelper.ASSESSMENT_TITLE + " = " + "\"" + title.trim() + "\"",
                 null,null);
 
-        if(!getAllCurrentAssessments.moveToNext()){
+        if(!getAllCurrentAssessments.moveToNext() || getAllCurrentAssessments.getInt(getAllCurrentAssessments.getColumnIndex(DBConnHelper.PK_Assessment_ID))
+                == assessmentIdToUpdate){
             return false;
         }else{
             return true;
