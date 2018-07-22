@@ -7,6 +7,7 @@ import android.app.DialogFragment;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -86,6 +87,21 @@ public class AssessmentAddActivity extends AppCompatActivity {
                 Boolean isObj = isObjective.isChecked();
                 Boolean isPerf = isPerformance.isChecked();
 
+                if(checkIfAssessmentExists(assessmentTitle.getText().toString())){
+
+                    final AlertDialog.Builder duplicateTitle = new AlertDialog.Builder(this);
+                    duplicateTitle.setTitle("There was an assessment with the same title found.");
+
+                    duplicateTitle.setNeutralButton("Change Title", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    });
+                    duplicateTitle.create().show();
+                    return false;
+                }
+
                 Assessment newAssessment = new Assessment(title, isObj, isPerf, selectedGoalDate);
                 if(activityBundle.get("Edit") != null){
                     updateAssessment(newAssessment);
@@ -116,6 +132,7 @@ public class AssessmentAddActivity extends AppCompatActivity {
     }
 
     private void saveAssessment(Assessment newAssessment) {
+
         ContentValues values = new ContentValues();
 
         values.put(DBConnHelper.ASSESSMENT_TITLE, newAssessment.getAssessmentTitle());
@@ -130,6 +147,17 @@ public class AssessmentAddActivity extends AppCompatActivity {
 
     }
 
+    private boolean checkIfAssessmentExists(String title){
+        Cursor getAllCurrentAssessments = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_ID),
+                DBConnHelper.ASSESSMENTS_ALL_COLUMNS, DBConnHelper.ASSESSMENT_TITLE + " = " + "\"" + title.trim() + "\"",
+                null,null);
+
+        if(!getAllCurrentAssessments.moveToNext()){
+            return false;
+        }else{
+            return true;
+        }
+    }
 
     public void showGoalDatePickerDialog(View view){
         Bundle goalBundle = new Bundle();

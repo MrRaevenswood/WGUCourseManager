@@ -55,7 +55,7 @@ public class CourseAddActivity extends AppCompatActivity{
     private static TextView mentorPhone;
     private static TextView notes;
     private Bundle activityBundle;
-    private int courseIdToUpdate;
+    private int courseIdToUpdate = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -104,6 +104,20 @@ public class CourseAddActivity extends AppCompatActivity{
     public boolean onOptionsItemSelected(MenuItem item){
         switch (item.getItemId()){
             case R.id.save:
+                if(checkIfCourseExists(courseTitle.getText().toString())){
+                    AlertDialog.Builder duplicateTitle = new AlertDialog.Builder(this);
+                    duplicateTitle.setTitle("There was an course with the same title found.");
+
+                    duplicateTitle.setNeutralButton("Change Title", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    });
+                    duplicateTitle.create().show();
+                    return false;
+
+                }
                 if(activityBundle.get("Edit") != null){
                     promptToUpdateAssessments();
                 }else{
@@ -118,6 +132,17 @@ public class CourseAddActivity extends AppCompatActivity{
         }
 
         return false;
+    }
+
+    private boolean checkIfCourseExists(String s) {
+        Cursor getAllCurrentCourses = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSE_ID),
+                DBConnHelper.COURSES_ALL_COLUMNS, DBConnHelper.COURSE_TITLE + " = " + "\"" + s.trim() + "\"",
+                null,null);
+        if(!getAllCurrentCourses.moveToNext()){
+            return false;
+        }else{
+            return true;
+        }]
     }
 
     private void promptToUpdateAssessments() {
@@ -199,8 +224,14 @@ public class CourseAddActivity extends AppCompatActivity{
         values.put(DBConnHelper.COURSE_MENTOR_PHONE, newCourse.getMentorPhone());
         values.put(DBConnHelper.COURSE_NOTES, newCourse.getNotes());
 
-        getContentResolver().insert(Uri.parse(WGUProvider.CONTENT_URI + "/" +
-                WGUProvider.COURSE_ID), values);
+        if(courseIdToUpdate == -1){
+            getContentResolver().insert(Uri.parse(WGUProvider.CONTENT_URI + "/" +
+                    WGUProvider.COURSE_ID), values);
+        }else{
+            getContentResolver().update(Uri.parse(WGUProvider.CONTENT_URI + "/" +
+                    WGUProvider.COURSE_ID), values, DBConnHelper.PK_COURSE_ID +
+                    " = " + courseIdToUpdate, null);
+        }
 
         Cursor courseIdCursor = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSE_ID),
                 new String[]{DBConnHelper.PK_COURSE_ID}, null, null, DBConnHelper.PK_COURSE_ID + " DESC");

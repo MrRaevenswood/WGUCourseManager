@@ -36,7 +36,7 @@ public class termAddActivity extends AppCompatActivity {
     private static TextView termStart;
     private static TextView termEnd;
     private Bundle activityBundle;
-    private int termIdToUpdate;
+    private int termIdToUpdate = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +73,21 @@ public class termAddActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item){
         switch (item.getItemId()){
             case R.id.save:
+
+                if(checkIfTermTitleExists(termTitle.getText().toString())){
+                    final AlertDialog.Builder duplicateTitle = new AlertDialog.Builder(this);
+                    duplicateTitle.setTitle("There was a term with the same title found.");
+
+                    duplicateTitle.setNeutralButton("Change Title", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    });
+                    duplicateTitle.create().show();
+                    return false;
+                }
+
                 if(activityBundle.get("Edit") != null){
                     promptToUpdateCourses();
 
@@ -125,7 +140,7 @@ public class termAddActivity extends AppCompatActivity {
 
                 Cursor allCourses = getAllCourses();
                 allCourses.moveToFirst();
-                while(allCourses.moveToNext()){
+                do {
                     for(String id : selectedCourseIds){
 
                         if(allCourses.getString(allCourses.getColumnIndex(DBConnHelper.PK_COURSE_ID)).equals(id)){
@@ -133,7 +148,7 @@ public class termAddActivity extends AppCompatActivity {
                             selectedCourseTitles.add(allCourses.getString(allCourses.getColumnIndex(DBConnHelper.COURSE_TITLE)));
                         }
                     }
-                }
+                }while(allCourses.moveToNext());
 
                 openCoursesDialog(selectedCourseTitles);
             }
@@ -151,7 +166,13 @@ public class termAddActivity extends AppCompatActivity {
         values.put(DBConnHelper.TERM_END, newTerm.getEndDate());
         values.put(DBConnHelper.TERM_RANGE, newTerm.getTermRange());
 
-        getContentResolver().insert(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.TERMS_ID), values);
+        if(termIdToUpdate == -1){
+            getContentResolver().insert(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.TERMS_ID), values);
+        }else{
+            getContentResolver().update(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.TERMS_ID), values
+            , DBConnHelper.TERM_ID + " = " + termIdToUpdate, null);
+        }
+
 
         Cursor termIdCursor = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.TERMS_ID),
                 new String[]{DBConnHelper.TERM_ID}, null, null, DBConnHelper.TERM_ID  + " DESC");
@@ -161,7 +182,7 @@ public class termAddActivity extends AppCompatActivity {
         ContentValues courseValues = new ContentValues();
         courseValues.put(DBConnHelper.FK_TERM_ID, termId);
 
-        if(newTerm.getCourses().size() > 0) {
+        if(newTerm.getCourses() != null) {
             for (Courses c : newTerm.getCourses()) {
                 courseValues.put(DBConnHelper.FK_COURSE_ID_TERMS, getCoursesKey(c.getCourseTitle()));
             }
@@ -418,6 +439,20 @@ public class termAddActivity extends AppCompatActivity {
         return getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSE_ID),
                 DBConnHelper.COURSES_ALL_COLUMNS, null, null, null);
     }
+
+    private Boolean checkIfTermTitleExists(String title){
+
+        Cursor matchingTermTitles = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.TERMS_ID),
+                null, DBConnHelper.TERM_TITLE + " = " + title.trim(), null, null );
+
+        if(!matchingTermTitles.moveToNext()){
+            return false;
+        }else{
+            return true;
+        }
+
+    }
+
 
     public void showStartDatePickerDialog(View view){
         Bundle startBundle = new Bundle();
