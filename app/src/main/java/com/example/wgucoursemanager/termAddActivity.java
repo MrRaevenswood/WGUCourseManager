@@ -37,6 +37,7 @@ public class termAddActivity extends AppCompatActivity {
     private static TextView termEnd;
     private Bundle activityBundle;
     private int termIdToUpdate = -1;
+    private int allowSaveCancel = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,33 +72,54 @@ public class termAddActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
+
+        AlertDialog.Builder clickAddCourse = new AlertDialog.Builder(this);
+        clickAddCourse.setTitle("Please click the Add Course Button Instead");
+        clickAddCourse.setPositiveButton("OK", new AlertDialog.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+
         switch (item.getItemId()){
             case R.id.save:
+                if (allowSaveCancel != -1) {
 
-                if(checkIfTermTitleExists(termTitle.getText().toString())){
-                    final AlertDialog.Builder duplicateTitle = new AlertDialog.Builder(this);
-                    duplicateTitle.setTitle("There was a term with the same title found.");
+                    if(checkIfTermTitleExists(termTitle.getText().toString())){
+                        final AlertDialog.Builder duplicateTitle = new AlertDialog.Builder(this);
+                        duplicateTitle.setTitle("There was a term with the same title found.");
 
-                    duplicateTitle.setNeutralButton("Change Title", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
+                        duplicateTitle.setNeutralButton("Change Title", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
 
-                        }
-                    });
-                    duplicateTitle.create().show();
-                    return false;
-                }
+                            }
+                        });
+                        duplicateTitle.create().show();
+                        return false;
+                    }
 
-                if(activityBundle.get("Edit") != null){
-                    promptToUpdateCourses();
+                    if(activityBundle.get("Edit") != null){
+                        promptToUpdateCourses();
+
+                    }else{
+                        promptToAddCourses();
+                    }
 
                 }else{
-                    promptToAddCourses();
+                    clickAddCourse.create().show();
                 }
+
                 break;
             case R.id.cancel:
-                Intent returnToTermsView = new Intent(termAddActivity.this, TermsActivity.class);
-                startActivity(returnToTermsView);
+                if(allowSaveCancel != -1) {
+                    Intent returnToTermsView = new Intent(termAddActivity.this, TermsActivity.class);
+                    startActivity(returnToTermsView);
+                }else{
+                    clickAddCourse.create().show();
+                }
+
                 break;
         }
 
@@ -129,26 +151,33 @@ public class termAddActivity extends AppCompatActivity {
         updateCourses.setPositiveButton("YES", new AlertDialog.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+
+                allowSaveCancel = -1;
+
                 ArrayList<String> selectedCourseIds = new ArrayList<>();
                 ArrayList<String> selectedCourseTitles = new ArrayList<>();
                 Cursor allCoursesThisTerm = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSES_IN_TERM_ID),
                         DBConnHelper.COURSES_IN_TERM_ALL_COLUMNS, DBConnHelper.FK_TERM_ID + " = " + termIdToUpdate, null, null);
                 allCoursesThisTerm.moveToFirst();
-                do{
-                    selectedCourseIds.add(allCoursesThisTerm.getString(allCoursesThisTerm.getColumnIndex(DBConnHelper.FK_COURSE_ID_TERMS)));
-                }while(allCoursesThisTerm.moveToNext());
 
-                Cursor allCourses = getAllCourses();
-                allCourses.moveToFirst();
-                do {
-                    for(String id : selectedCourseIds){
+                if(allCoursesThisTerm.getCount() > 0){
+                    do{
+                        selectedCourseIds.add(allCoursesThisTerm.getString(allCoursesThisTerm.getColumnIndex(DBConnHelper.FK_COURSE_ID_TERMS)));
+                    }while(allCoursesThisTerm.moveToNext());
 
-                        if(allCourses.getString(allCourses.getColumnIndex(DBConnHelper.PK_COURSE_ID)).equals(id)){
+                    Cursor allCourses = getAllCourses();
+                    allCourses.moveToFirst();
+                    do {
+                        for(String id : selectedCourseIds){
 
-                            selectedCourseTitles.add(allCourses.getString(allCourses.getColumnIndex(DBConnHelper.COURSE_TITLE)));
+                            if(allCourses.getString(allCourses.getColumnIndex(DBConnHelper.PK_COURSE_ID)).equals(id)){
+
+                                selectedCourseTitles.add(allCourses.getString(allCourses.getColumnIndex(DBConnHelper.COURSE_TITLE)));
+                            }
                         }
-                    }
-                }while(allCourses.moveToNext());
+                    }while(allCourses.moveToNext());
+                }
+
 
                 openCoursesDialog(selectedCourseTitles);
             }
@@ -205,6 +234,7 @@ public class termAddActivity extends AppCompatActivity {
         addAssessment.setPositiveButton("YES", new AlertDialog.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+                allowSaveCancel = -1;
                 openCoursesDialog(null);
             }
         });
@@ -243,6 +273,8 @@ public class termAddActivity extends AppCompatActivity {
         ConstraintLayout to_add = findViewById(R.id.termAdd);
         ArrayList<View> viewsInOriginalLayout = new ArrayList<>();
         ArrayList<View> viewsInNewLayout = new ArrayList<>();
+
+
 
         for( int i = 0; i < to_add.getChildCount(); i++){
             View v = to_add.getChildAt(i);
@@ -287,6 +319,20 @@ public class termAddActivity extends AppCompatActivity {
                 for(CheckBox checkBox : generatedCheckBoxIds){
 
                     if(checkBox.isChecked()){coursesContainer.add(checkBox.getText().toString());}
+
+                    if(!checkBox.isChecked()){
+                        int counter = 0;
+                        for(String s : coursesSelected){
+                            if(checkBox.getText().toString().equals(s)){
+                                counter += 1;
+                            }
+                        }
+                        if(counter > 0){
+                            getContentResolver().delete(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSES_IN_TERM_ID),
+                                    DBConnHelper.FK_COURSE_ID_TERMS + " = " + getCoursesKey(checkBox.getText().toString()) +
+                            " AND " + DBConnHelper.FK_TERM_ID + " = " + termIdToUpdate, null);
+                        }
+                    }
 /*
                     if(coursesSelected != null){
                         if(checkBox.isChecked() && coursesSelected.indexOf(checkBox.getText().toString()) == -1){
@@ -368,7 +414,7 @@ public class termAddActivity extends AppCompatActivity {
         String title, start, end, status, mentorN, mentorE, mentorP, notesTaken;
         ArrayList<Assessment> allAssessmentsForCourse;
 
-        allCurrentCourses = getAllCourses();
+        allCurrentCourses = getCourseFromKey(i);
         allCurrentCourses.moveToFirst();
 
         title = allCurrentCourses.getString(
@@ -435,15 +481,22 @@ public class termAddActivity extends AppCompatActivity {
         return coursesKey.getInt(0);
     }
 
+    private Cursor getCourseFromKey(Integer i){
+        return getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSE_ID),
+                DBConnHelper.COURSES_ALL_COLUMNS, DBConnHelper.PK_COURSE_ID + " = " + i, null, null);
+    }
+
     private Cursor getAllCourses() {
         return getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSE_ID),
                 DBConnHelper.COURSES_ALL_COLUMNS, null, null, null);
     }
 
+
+
     private Boolean checkIfTermTitleExists(String title){
 
         Cursor matchingTermTitles = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.TERMS_ID),
-                null, DBConnHelper.TERM_TITLE + " = " + title.trim(), null, null );
+                null, DBConnHelper.TERM_TITLE + " = " + "\"" + title.trim() + "\"", null, null );
 
         if(!matchingTermTitles.moveToNext() || matchingTermTitles.getInt(matchingTermTitles.getColumnIndex(DBConnHelper.TERM_ID))
                 == termIdToUpdate ){

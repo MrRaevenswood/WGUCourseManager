@@ -56,6 +56,7 @@ public class CourseAddActivity extends AppCompatActivity{
     private static TextView notes;
     private Bundle activityBundle;
     private int courseIdToUpdate = -1;
+    private int allowSaveCancel = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -90,6 +91,7 @@ public class CourseAddActivity extends AppCompatActivity{
 
         Toolbar actionBar = findViewById(R.id.toolbar);
         actionBar.setTitle("Add/Edit Course");
+        //actionBar.setTitleTextColor(R.color.);
         setSupportActionBar(actionBar);
 
     }
@@ -102,32 +104,51 @@ public class CourseAddActivity extends AppCompatActivity{
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
+
+        AlertDialog.Builder clickAddCourse = new AlertDialog.Builder(this);
+        clickAddCourse.setTitle("Please click the Add Assessment Button Instead");
+        clickAddCourse.setPositiveButton("OK", new AlertDialog.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
         switch (item.getItemId()){
             case R.id.save:
-                if(checkIfCourseExists(courseTitle.getText().toString())){
-                    AlertDialog.Builder duplicateTitle = new AlertDialog.Builder(this);
-                    duplicateTitle.setTitle("There was an course with the same title found.");
+                if (allowSaveCancel != -1) {
+                    if(checkIfCourseExists(courseTitle.getText().toString())){
+                        AlertDialog.Builder duplicateTitle = new AlertDialog.Builder(this);
+                        duplicateTitle.setTitle("There was an course with the same title found.");
 
-                    duplicateTitle.setNeutralButton("Change Title", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
+                        duplicateTitle.setNeutralButton("Change Title", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
 
-                        }
-                    });
-                    duplicateTitle.create().show();
-                    return false;
+                            }
+                        });
+                        duplicateTitle.create().show();
+                        return false;
 
-                }
-                if(activityBundle.get("Edit") != null){
-                    promptToUpdateAssessments();
+                    }
+                    if(activityBundle.get("Edit") != null){
+                        promptToUpdateAssessments();
+                    }else{
+                        promptToAddAssessments();
+                    }
                 }else{
-                    promptToAddAssessments();
+                    clickAddCourse.create().show();
                 }
+
 
                 break;
             case R.id.cancel:
-                Intent goBackToCourses = new Intent(CourseAddActivity.this, CourseActivity.class );
-                startActivity(goBackToCourses);
+                if (allowSaveCancel != -1) {
+                    Intent goBackToCourses = new Intent(CourseAddActivity.this, CourseActivity.class );
+                    startActivity(goBackToCourses);
+                }else{
+                    clickAddCourse.create().show();
+                }
+
                 break;
         }
 
@@ -177,6 +198,7 @@ public class CourseAddActivity extends AppCompatActivity{
         updateAssessments.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                allowSaveCancel = -1;
                 ArrayList<String> selectedAssessmentIds = new ArrayList<>();
                 try {
                     ArrayList<String> selectedAssessmentTitles = getAllAssignedAssignments();
@@ -281,6 +303,7 @@ public class CourseAddActivity extends AppCompatActivity{
         addAssessment.setPositiveButton("YES", new AlertDialog.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+                allowSaveCancel = -1;
                 openAssessmentDialog(null, null);
             }
         });
