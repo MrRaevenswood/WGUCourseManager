@@ -337,7 +337,18 @@ public class termAddActivity extends AppCompatActivity {
                 ArrayList<Integer> coursesKeys = new ArrayList<>();
                 for(CheckBox checkBox : generatedCheckBoxIds){
 
-                    if(checkBox.isChecked()){coursesContainer.add(checkBox.getText().toString());}
+
+                    if(checkBox.isChecked()){
+                        int counter = 0;
+                        for(String c : coursesSelected) {
+                            if(checkBox.getText().toString().equals(c)){
+                                counter += 1;
+                            }
+                        }
+                        if(counter == 0){
+                            coursesContainer.add(checkBox.getText().toString());
+                        }
+                    }
 
                     if(!checkBox.isChecked() && coursesSelected != null){
                         int counter = 0;
