@@ -6,6 +6,7 @@ import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -25,6 +26,7 @@ public class WGUProvider extends ContentProvider {
     public static final int COURSE_ID = 4;
     public static final int COURSES_WITH_ASSESSMENTS_ID = 5;
     public static final int ASSESSMENTS_ID = 6;
+    public static final int QUERYJOIN = 7;
 
     private static final UriMatcher uriMatcher =
             new UriMatcher(UriMatcher.NO_MATCH);
@@ -42,6 +44,7 @@ public class WGUProvider extends ContentProvider {
         uriMatcher.addURI(AUTHORITY, BASE_PATH + "/" + ASSESSMENTS_IN_COURSES_ID, ASSESSMENTS_IN_COURSES_ID);
         uriMatcher.addURI(AUTHORITY, BASE_PATH + "/" + COURSES_WITH_ASSESSMENTS_ID, COURSES_WITH_ASSESSMENTS_ID);
         uriMatcher.addURI(AUTHORITY, BASE_PATH + "/" + COURSES_IN_TERM_ID, COURSES_IN_TERM_ID);
+        uriMatcher.addURI(AUTHORITY, BASE_PATH + "/" + QUERYJOIN, QUERYJOIN);
     }
 
     private SQLiteDatabase database;
@@ -76,6 +79,10 @@ public class WGUProvider extends ContentProvider {
             case COURSES_WITH_ASSESSMENTS_ID:
                 return database.query(DBConnHelper.TABLE_ASSESSMENTS_IN_COURSES, projection,
                         selection,selectionArgs, null, null, sortOrder);
+            case QUERYJOIN:
+                return database.rawQuery("Select * From " + DBConnHelper.TABLE_COURSES + " INNER JOIN " + DBConnHelper.TABLE_COURSES_IN_TERM
+                    + " ON " + DBConnHelper.TABLE_COURSES + "." + DBConnHelper.PK_COURSE_ID + " = " + DBConnHelper.TABLE_COURSES_IN_TERM + "." + DBConnHelper.FK_COURSE_ID_TERMS + " WHERE " +
+                        DBConnHelper.FK_TERM_ID + " = " + selection, null);
         }
 
         return null;

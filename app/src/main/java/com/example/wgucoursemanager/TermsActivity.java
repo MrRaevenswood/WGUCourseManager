@@ -94,6 +94,14 @@ public class TermsActivity extends ListActivity
 
     }
 
+    private Boolean coursesExist(String selectedTermId){
+        Cursor getCourses = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSES_IN_TERM_ID),
+                DBConnHelper.COURSES_IN_TERM_ALL_COLUMNS, DBConnHelper.FK_TERM_ID + " = " + selectedTermId, null,
+                null);
+
+        return  getCourses.getCount() != 0;
+    }
+
     @Override
     protected void onListItemClick(final ListView l, View v, final int position, long id){
         super.onListItemClick(l,v,position,id);
@@ -123,13 +131,19 @@ public class TermsActivity extends ListActivity
                 String selectedTermData = selectedTermDataToDelete.getString(1);
                 String selectedTermDataId = getTermData(selectedTermData).get(0);
 
-                getContentResolver().delete(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.TERMS_ID),
-                        DBConnHelper.TERM_ID + " = " + selectedTermDataId, null);
-                getContentResolver().delete(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSES_IN_TERM_ID),
-                        DBConnHelper.COURSES_IN_TERM_ID + " = " + selectedTermDataId, null);
+                if(coursesExist(selectedTermDataId)){
+                    AlertDialog.Builder dontDelete = new AlertDialog.Builder(TermsActivity.this);
+                    dontDelete.setTitle("Can't delete this as the term contains courses.");
+                    dontDelete.setPositiveButton("OK",null);
+                    dontDelete.create().show();
+                }else{
+                    getContentResolver().delete(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.TERMS_ID),
+                            DBConnHelper.TERM_ID + " = " + selectedTermDataId, null);
+                    getContentResolver().delete(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSES_IN_TERM_ID),
+                            DBConnHelper.COURSES_IN_TERM_ID + " = " + selectedTermDataId, null);
 
-                restartLoader();
-
+                    restartLoader();
+                }
             }
         });
 

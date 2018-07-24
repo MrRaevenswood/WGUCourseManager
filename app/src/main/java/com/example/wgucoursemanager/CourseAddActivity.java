@@ -549,7 +549,7 @@ public class CourseAddActivity extends AppCompatActivity{
             whichToPopulate = "Objective";
         }*/
 
-
+        if(assignmentsToPopulate.getCount() != 0){
             do{
 
                 String currentTitle = assignmentsToPopulate.getString(
@@ -569,7 +569,7 @@ public class CourseAddActivity extends AppCompatActivity{
                     objectiveAssessmentTitles.add(currentTitle);
                 }
             }while(assignmentsToPopulate.moveToNext());
-
+        }
 
         try {
             showPopupWindow(performanceAssessmentTitles, objectiveAssessmentTitles);

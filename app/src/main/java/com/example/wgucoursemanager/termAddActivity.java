@@ -19,7 +19,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ListView;
 import android.widget.RadioButton;
+import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.support.v7.widget.Toolbar;
 
@@ -35,9 +37,16 @@ public class termAddActivity extends AppCompatActivity {
     private static TextView termTitle;
     private static TextView termStart;
     private static TextView termEnd;
+    private static ListView associatedCoursesList;
+    private SimpleCursorAdapter associatedCoursesAdapter;
     private Bundle activityBundle;
     private int termIdToUpdate = -1;
     private int allowSaveCancel = 1;
+
+    private int[] toViews = {android.R.id.text1, android.R.id.text2};
+    private static final String[] PROJECTION = new String[]{
+            DBConnHelper.COURSE_TITLE, DBConnHelper.COURSE_RANGE
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,13 +58,23 @@ public class termAddActivity extends AppCompatActivity {
         termEnd = findViewById(R.id.termEndDate);
         activityBundle = getIntent().getExtras();
 
+        associatedCoursesList = findViewById(R.id.associatedCoursesList);
+
         if(activityBundle.get("Edit") != null){
            ArrayList<String> termData = activityBundle.getStringArrayList("selectedTerm");
+           termIdToUpdate = Integer.parseInt(termData.get(0));
            termTitle.setText(termData.get(1));
            termStart.setText(termData.get(2));
            termEnd.setText(termData.get(3));
 
-           termIdToUpdate = Integer.parseInt(termData.get(0));
+           Cursor queryJoin = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.QUERYJOIN),
+                   new String[]{DBConnHelper.COURSE_TITLE, DBConnHelper.COURSE_RANGE},termData.get(0),null,null);
+
+           associatedCoursesAdapter = new SimpleCursorAdapter(termAddActivity.this,
+                   android.R.layout.simple_list_item_2, queryJoin , PROJECTION, toViews , 0);
+
+           associatedCoursesList.setAdapter(associatedCoursesAdapter);
+
         }
 
         Toolbar toolbar = findViewById(R.id.addTermToolBar);
@@ -320,7 +339,7 @@ public class termAddActivity extends AppCompatActivity {
 
                     if(checkBox.isChecked()){coursesContainer.add(checkBox.getText().toString());}
 
-                    if(!checkBox.isChecked()){
+                    if(!checkBox.isChecked() && coursesSelected != null){
                         int counter = 0;
                         for(String s : coursesSelected){
                             if(checkBox.getText().toString().equals(s)){
