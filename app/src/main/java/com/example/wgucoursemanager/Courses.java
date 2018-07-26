@@ -9,17 +9,17 @@ import java.util.ArrayList;
 
 public class Courses {
 
-    private String title;
-    private String startDate;
-    private String anticipatedEndDate;
-    private String status;
-    private String mentorName;
-    private String mentorEmail;
-    private String mentorPhone;
+    private String title = "";
+    private String startDate = "";
+    private String anticipatedEndDate = "";
+    private String status = "";
+    private String mentorName = "";
+    private String mentorEmail = "";
+    private String mentorPhone = "";
     private ArrayList<Assessment> objectiveAssessment = new ArrayList<>();
     private ArrayList<Assessment> performanceAssessment = new ArrayList<>();
-    private String notes;
-    private String courseRange;
+    private String notes = "";
+    private String courseRange = "";
 
     public Courses(String title, String start, String end, String status,
                    String mentorName, String mentorEmail, String mentorPhone,

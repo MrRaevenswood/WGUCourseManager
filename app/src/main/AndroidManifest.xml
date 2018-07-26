@@ -68,6 +68,7 @@
             android:name=".AssessmentAddActivity"
             android:theme = "@style/AppTheme.NoActionBar">
         </activity>
+
     </application>
 
 </manifest>

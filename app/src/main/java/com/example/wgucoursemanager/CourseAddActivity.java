@@ -1,18 +1,33 @@
 package com.example.wgucoursemanager;
 
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TimePickerDialog;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.os.SystemClock;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.design.widget.AppBarLayout;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.ContextMenu;
@@ -25,6 +40,8 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.PopupWindow;
@@ -32,12 +49,17 @@ import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.R.*;
+import android.widget.TimePicker;
 
 import org.w3c.dom.Text;
 
 import java.lang.reflect.Array;
 import java.text.ParseException;
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -57,6 +79,7 @@ public class CourseAddActivity extends AppCompatActivity{
     private Bundle activityBundle;
     private int courseIdToUpdate = -1;
     private int allowSaveCancel = 1;
+    private int mYear, mMonth, mDay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -73,7 +96,6 @@ public class CourseAddActivity extends AppCompatActivity{
         notes = findViewById(R.id.notes);
 
         activityBundle = getIntent().getExtras();
-
         if(activityBundle.get("Edit") != null){
             ArrayList<String> courseData = activityBundle.getStringArrayList("selectedCourse");
 
@@ -94,6 +116,25 @@ public class CourseAddActivity extends AppCompatActivity{
         //actionBar.setTitleTextColor(R.color.);
         setSupportActionBar(actionBar);
 
+    }
+
+    public void showDatePickerThenTimePicker(){
+
+        final Calendar c = Calendar.getInstance();
+        mYear = c.get(Calendar.YEAR);
+        mMonth = c.get(Calendar.MONTH);
+        mDay = c.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog pickADate = new DatePickerDialog(this,
+                new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(android.widget.DatePicker view, int year, int month, int dayOfMonth) {
+
+
+
+                    }
+                }, mYear, mMonth, mDay);
+        pickADate.show();
     }
 
     @Override
@@ -249,6 +290,8 @@ public class CourseAddActivity extends AppCompatActivity{
         values.put(DBConnHelper.COURSE_MENTOR_EMAIL, newCourse.getMentorEmail());
         values.put(DBConnHelper.COURSE_MENTOR_PHONE, newCourse.getMentorPhone());
         values.put(DBConnHelper.COURSE_NOTES, newCourse.getNotes());
+
+        scheduleAlertDialog(newCourse);
 
         if(courseIdToUpdate == -1){
             getContentResolver().insert(Uri.parse(WGUProvider.CONTENT_URI + "/" +
@@ -713,6 +756,39 @@ public class CourseAddActivity extends AppCompatActivity{
                 selectedIsPerformance, selectedGoalDate);
     }
 
+    private void scheduleAlertDialog(Courses course){
+        Handler course_is_about_to_start = new Handler(){
+          public void handleMessage(Message msg){
+                      AlertDialog.Builder buildTest = new AlertDialog.Builder(CourseAddActivity.this);
+                      buildTest.setTitle("Course is about to Start");
+                      buildTest.create().show();
+          }
+        };
+
+        Handler course_is_about_to_end = new Handler(){
+            public void handleMessage(Message msg){
+                AlertDialog.Builder buildTest = new AlertDialog.Builder(CourseAddActivity.this);
+                buildTest.setTitle("Course is about to End");
+                buildTest.create().show();
+            }
+        };
+
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+        LocalDateTime startDate = LocalDateTime.parse(course.getStartDate(),formatter);
+        LocalDateTime endDate = LocalDateTime.parse(course.getAnticipatedEndDate(), formatter);
+        LocalDateTime currentTime = LocalDateTime.now();
+
+        long courseStartDelay = (startDate.toEpochSecond(ZoneOffset.UTC) - currentTime.toEpochSecond(ZoneOffset.UTC));
+        long courseEndDelay = (endDate.toEpochSecond(ZoneOffset.UTC) - currentTime.toEpochSecond(ZoneOffset.UTC));
+
+        if(courseStartDelay >= 0){
+            course_is_about_to_start.sendEmptyMessageAtTime(0,courseStartDelay * 1000);
+        }
+        if(courseEndDelay >= 0){
+            course_is_about_to_end.sendEmptyMessageAtTime(0,courseEndDelay * 1000);
+        }
+    }
+
     public void showStartDatePickerDialog(View view){
         Bundle startBundle = new Bundle();
         startBundle.putString("startDate","startDate");
@@ -738,6 +814,7 @@ public class CourseAddActivity extends AppCompatActivity{
         public int year;
         public int month;
         public int day;
+        public Bundle args = new Bundle();
 
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -746,7 +823,6 @@ public class CourseAddActivity extends AppCompatActivity{
             year = c.get(Calendar.YEAR);
             month = c.get(Calendar.MONTH);
             day = c.get(Calendar.DAY_OF_MONTH);
-
             // Create a new instance of DatePickerDialog and return it
             return new DatePickerDialog(getActivity(), this, year, month, day);
         }
@@ -754,16 +830,64 @@ public class CourseAddActivity extends AppCompatActivity{
         @Override
         public void onDateSet(android.widget.DatePicker view, int year, int month, int dayOfMonth) {
             month += 1;
+            String monthString = String.valueOf(month);
+            if(String.valueOf(month).length() != 2){
+                monthString = "0".concat(monthString);
+            }
             if(this.getArguments().containsKey("startDate")){
-                courseStart.setText(String.valueOf(month) + "/" + String.valueOf(dayOfMonth) + "/"
-                        + String.valueOf(year));
+                courseStart.setText( String.valueOf(year) + "-" + monthString + "-"
+                        + String.valueOf(dayOfMonth));
+                args.putString("startDate","startDate");
             }else if(this.getArguments().containsKey("endDate")){
-                courseEnd.setText(String.valueOf(month) + "/" + String.valueOf(dayOfMonth) + "/"
-                        + String.valueOf(year));
-            };
+                courseEnd.setText(String.valueOf(year) + "-" + monthString + "-"
+                        + String.valueOf(dayOfMonth));
+                args.putString("endDate", "endDate");
+            }
+
+            TimePicker startTimePicker = new TimePicker();
+            startTimePicker.setArguments(args);
+            startTimePicker.show(getFragmentManager(), "timePicker");
+        }
+
+    }
+
+    public static class TimePicker extends DialogFragment
+            implements TimePickerDialog.OnTimeSetListener{
+
+        public int hour;
+        public int minute;
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState){
+            final Calendar t = Calendar.getInstance();
+            hour = t.get(Calendar.HOUR);
+            minute = t.get(Calendar.MINUTE);
+
+            return new TimePickerDialog(getActivity(),this, hour, minute, true);
 
         }
 
+        @Override
+        public void onTimeSet(android.widget.TimePicker view, int hourOfDay, int minute) {
+
+            String hourString = String.valueOf(hourOfDay);
+            String minuteString = String.valueOf(minute);
+
+            if(hourString.length() != 2){
+                hourString = "0".concat(hourString);
+            }
+
+            if(minuteString.length() != 2){
+                minuteString = "0".concat(minuteString);
+            }
+
+            if(this.getArguments().containsKey("startDate")){
+                courseStart.append("T" + hourString + ":" + minuteString + ":00");
+            }else if(this.getArguments().containsKey("endDate")){
+                courseEnd.append("T" + hourString + ":" + minuteString + ":00");
+            }
+
+        }
     }
 
 }
