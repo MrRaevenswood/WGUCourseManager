@@ -66,9 +66,26 @@
         </activity>
         <activity
             android:name=".AssessmentAddActivity"
-            android:theme = "@style/AppTheme.NoActionBar">
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar"></activity>
 
+        <service
+            android:name=".scheduleNotification"
+            android:label="Notification Service"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+        <service
+            android:name=".courseAssessmentStartEndNotifier"
+            android:label="Schedule Notification" />
+
+        <receiver android:name=".NotificationReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <activity
+            android:name=".ScheduleNotifier"
+            android:label="@string/title_activity_schedule_notifier"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

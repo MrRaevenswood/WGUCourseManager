@@ -1,70 +1,46 @@
 package com.example.wgucoursemanager;
 
-import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.ComponentName;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.database.Cursor;
-import android.graphics.Color;
-import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
-import android.os.SystemClock;
+import android.support.annotation.RequiresApi;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
-import android.support.design.widget.AppBarLayout;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.ContextMenu;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.DatePicker;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.PopupMenu;
-import android.widget.PopupWindow;
-import android.widget.RadioButton;
-import android.widget.Spinner;
 import android.widget.TextView;
-import android.R.*;
-import android.widget.TimePicker;
-
-import org.w3c.dom.Text;
-
-import java.lang.reflect.Array;
 import java.text.ParseException;
-import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.Dictionary;
-import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import android.content.Context;
+import android.widget.Toast;
 
 public class CourseAddActivity extends AppCompatActivity{
 
@@ -79,7 +55,7 @@ public class CourseAddActivity extends AppCompatActivity{
     private Bundle activityBundle;
     private int courseIdToUpdate = -1;
     private int allowSaveCancel = 1;
-    private int mYear, mMonth, mDay;
+    private courseAssessmentStartEndNotifier s;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -116,25 +92,6 @@ public class CourseAddActivity extends AppCompatActivity{
         //actionBar.setTitleTextColor(R.color.);
         setSupportActionBar(actionBar);
 
-    }
-
-    public void showDatePickerThenTimePicker(){
-
-        final Calendar c = Calendar.getInstance();
-        mYear = c.get(Calendar.YEAR);
-        mMonth = c.get(Calendar.MONTH);
-        mDay = c.get(Calendar.DAY_OF_MONTH);
-
-        DatePickerDialog pickADate = new DatePickerDialog(this,
-                new DatePickerDialog.OnDateSetListener() {
-                    @Override
-                    public void onDateSet(android.widget.DatePicker view, int year, int month, int dayOfMonth) {
-
-
-
-                    }
-                }, mYear, mMonth, mDay);
-        pickADate.show();
     }
 
     @Override
@@ -514,83 +471,14 @@ public class CourseAddActivity extends AppCompatActivity{
         }
     }
 
-    private boolean assessmentWasPreviouslyChecked(String assessmentTitle) {
-        int id = getAssessmentKey(assessmentTitle);
 
-        Cursor thisCourseWithThisAssessment = getContentResolver().query(Uri.parse(WGUProvider.CONTENT_URI + "\"" + WGUProvider.ASSESSMENTS_IN_COURSES_ID),
-                DBConnHelper.TABLE_ASSESSMENTS_IN_COURSES_ALL_COLUMNS,DBConnHelper.FK_COURSE_ID_ASSESSMENTS + " = " + courseIdToUpdate +
-                " AND " + DBConnHelper.FK_ASSESSMENTS_ID_IN_COURSES + " = " + id,null,null);
-
-        return thisCourseWithThisAssessment == null;
-    }
-
-    public void showPopup(View v, ArrayList<String> performance,
-                          ArrayList<String> objective){
-        PopupMenu popup = new PopupMenu(this, v);
-        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-
-                item.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
-                item.setActionView(new View(getApplicationContext()));
-
-                return false;
-            }
-        });
-        popup.setOnDismissListener(new PopupMenu.OnDismissListener() {
-            @Override
-            public void onDismiss(PopupMenu menu) {
-                int counter = 0;
-                ArrayList<String> assessmentContainer = new ArrayList<>();
-                ArrayList<Integer> assessmentKeys = new ArrayList<>();
-                while(counter < menu.getMenu().size()){
-                    MenuItem currentItem = menu.getMenu().getItem(counter);
-                    if(currentItem.isChecked()){
-                        assessmentContainer.add(currentItem.getTitle().toString());
-                    }
-                    counter += 1;
-                }
-
-            }
-        });
-        for(String s : performance){
-            popup.getMenu().add(R.id.performanceAssessments, popup.getMenu().size(),0, s);
-            popup.getMenu().getItem(popup.getMenu().size() - 1).setCheckable(true);
-        }
-        for(String s : objective){
-            popup.getMenu().add(R.id.objectiveAssessments, popup.getMenu().size(), 0, s);
-            popup.getMenu().getItem(popup.getMenu().size() - 1).setCheckable(true);
-        }
-
-        MenuInflater inflater = popup.getMenuInflater();
-        inflater.inflate(R.menu.course_add_assessments,popup.getMenu());
-
-        popup.show();
-    }
 
     private void openAssessmentDialog(ArrayList<String> selectedObjective, ArrayList<String> selectedPerformance) {
-
-        //AlertDialog.Builder populateAssessments = new AlertDialog.Builder(this);
-        //populateAssessments.setTitle("Choose your one objective or performance of Both");
-
-        //ArrayAdapter<String> objectiveAssessmentTitles = new ArrayAdapter<>(populateAssessments.getContext(), R.layout.custom_dropdown_dialog);
-        //ArrayAdapter<String> performanceAssessmentTitles = new ArrayAdapter<>(populateAssessments.getContext(), R.layout.custom_dropdown_dialog);
 
         ArrayList<String> performanceAssessmentTitles = new ArrayList<>();
         ArrayList<String> objectiveAssessmentTitles = new ArrayList<>();
 
         Cursor assignmentsToPopulate = getAllCurrentAssessments();
-        //String whichToPopulate = "";
-
-        assignmentsToPopulate.moveToFirst();
-        /*
-        if(selectedPerformance.size() == 0 && selectedObjective.size() == 0) {
-            whichToPopulate = "Both";
-        }else if(selectedPerformance.size() == 0 && selectedObjective.size() > 0){
-            whichToPopulate = "Performance";
-        }else if(selectedObjective.size() == 0 && selectedPerformance.size() > 0){
-            whichToPopulate = "Objective";
-        }*/
 
         if(assignmentsToPopulate.getCount() != 0){
             do{
@@ -619,55 +507,6 @@ public class CourseAddActivity extends AppCompatActivity{
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        /*
-        populateAssessments.setView(LayoutInflater.from(getApplicationContext()).inflate(R.layout.custom_dropdown_dialog, null));
-        performanceAssessmentTitles.setDropDownViewResource(R.layout.custom_dropdown_dialog);
-        objectiveAssessmentTitles.setDropDownViewResource(R.layout.custom_dropdown_dialog);
-
-        final Spinner objectiveSpinner = findViewById(R.id.objectiveSpinner);
-
-        if(!objectiveAssessmentTitles.isEmpty()){
-            objectiveSpinner.setAdapter(objectiveAssessmentTitles);
-        }
-        final Spinner performanceSpinner = findViewById(R.id.performanceSpinner);
-            if(!objectiveAssessmentTitles.isEmpty()){
-            performanceSpinner.setAdapter(performanceAssessmentTitles);
-        }
-
-
-        populateAssessments.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                ArrayList<String> assessmentContainer = new ArrayList<>();
-                ArrayList<Integer> assessmentKeys = new ArrayList<>();
-
-                if(!(objectiveSpinner.getSelectedItem() == null))
-                   assessmentContainer.add(objectiveSpinner.getSelectedItem().toString());
-                if(!(performanceSpinner.getSelectedItem() == null))
-                    assessmentContainer.add(performanceSpinner.getSelectedItem().toString());
-
-                for (String assessment : assessmentContainer){
-                    assessmentKeys.add(getAssessmentKey(assessment));
-                }
-
-                try {
-                    saveCourse(buildCourse(assessmentKeys));
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        });
-
-        populateAssessments.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialogInterface) {
-
-            }
-        });
-
-        populateAssessments.create().show(); */
-
 }
 
     public Cursor getAllCurrentAssessments(){
@@ -756,37 +595,51 @@ public class CourseAddActivity extends AppCompatActivity{
                 selectedIsPerformance, selectedGoalDate);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private void scheduleAlertDialog(Courses course){
-        Handler course_is_about_to_start = new Handler(){
-          public void handleMessage(Message msg){
-                      AlertDialog.Builder buildTest = new AlertDialog.Builder(CourseAddActivity.this);
-                      buildTest.setTitle("Course is about to Start");
-                      buildTest.create().show();
-          }
-        };
 
-        Handler course_is_about_to_end = new Handler(){
-            public void handleMessage(Message msg){
-                AlertDialog.Builder buildTest = new AlertDialog.Builder(CourseAddActivity.this);
-                buildTest.setTitle("Course is about to End");
-                buildTest.create().show();
-            }
-        };
+        Calendar c = Calendar.getInstance();
+        int test = c.get(Calendar.MONTH) + 1;
+        String month = String.valueOf(test);
+        if (month.length() != 2) {
+            month = "0" + month;
+        }
+
+        String dayOfMonth = String.valueOf(c.get(Calendar.DAY_OF_MONTH));
+        if(dayOfMonth.length() != 2){
+            dayOfMonth = "0" + dayOfMonth;
+        }
+
+        String hour = String.valueOf(c.get(Calendar.HOUR));
+        if(hour.length() != 2){
+            hour = "0" + hour;
+        }
+
+        String minute = String.valueOf(c.get(Calendar.MINUTE));
+        if(minute.length() != 2){
+            minute = "0" + minute;
+        }
 
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
         LocalDateTime startDate = LocalDateTime.parse(course.getStartDate(),formatter);
         LocalDateTime endDate = LocalDateTime.parse(course.getAnticipatedEndDate(), formatter);
-        LocalDateTime currentTime = LocalDateTime.now();
+        LocalDateTime current = LocalDateTime.parse(String.valueOf(c.get(Calendar.YEAR)) + "-" + month
+                + "-" + dayOfMonth + "T" + hour + ":" + minute + ":00",formatter);
 
-        long courseStartDelay = (startDate.toEpochSecond(ZoneOffset.UTC) - currentTime.toEpochSecond(ZoneOffset.UTC));
-        long courseEndDelay = (endDate.toEpochSecond(ZoneOffset.UTC) - currentTime.toEpochSecond(ZoneOffset.UTC));
+        long millisToStart = current.until(startDate, ChronoUnit.MILLIS);
+        long millisToEnd = current.until(endDate, ChronoUnit.MILLIS);
 
-        if(courseStartDelay >= 0){
-            course_is_about_to_start.sendEmptyMessageAtTime(0,courseStartDelay * 1000);
-        }
-        if(courseEndDelay >= 0){
-            course_is_about_to_end.sendEmptyMessageAtTime(0,courseEndDelay * 1000);
-        }
+        Intent courseStartService = new Intent(getApplicationContext(), courseAssessmentStartEndNotifier.class);
+        courseStartService.putExtra("notificationType", "course");
+        courseStartService.putExtra("startOrEnd", "start");
+        courseStartService.putExtra("millsTillAlarm", millisToStart);
+        bindService(courseStartService,connection,Context.BIND_AUTO_CREATE);
+
+        Intent courseEndService = new Intent(getApplicationContext(), courseAssessmentStartEndNotifier.class);
+        courseEndService.putExtra("notificationType", "course");
+        courseEndService.putExtra("startOrEnd", "end");
+        courseEndService.putExtra("millsTillAlarm", millisToEnd);
+        startService(courseEndService);
     }
 
     public void showStartDatePickerDialog(View view){
@@ -807,6 +660,8 @@ public class CourseAddActivity extends AppCompatActivity{
 
         endDatePicker.show(getFragmentManager(), "datePicker");
     }
+
+
 
     public static class DatePicker extends DialogFragment
             implements DatePickerDialog.OnDateSetListener {
@@ -890,6 +745,19 @@ public class CourseAddActivity extends AppCompatActivity{
         }
     }
 
+    private ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            courseAssessmentStartEndNotifier.MyBinder b = (courseAssessmentStartEndNotifier.MyBinder) service;
+            s = b.getService();
+            //Toast.makeText(CourseAddActivity.this, "Notifier is On!", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            s = null;
+        }
+    };
 }
 
 

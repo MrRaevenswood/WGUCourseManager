@@ -76,7 +76,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="35dp"
         android:ems="10"
-        android:inputType="date"
         android:onClick="showGoalDatePickerDialog"
         app:layout_constraintEnd_toStartOf="@+id/radioGroup"
         app:layout_constraintStart_toStartOf="@+id/radioGroup"
