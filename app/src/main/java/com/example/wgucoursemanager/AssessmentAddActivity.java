@@ -16,6 +16,7 @@ import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.telephony.SmsManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -73,6 +74,8 @@ public class AssessmentAddActivity extends AppCompatActivity {
             assessmentIdToUpdate = Integer.parseInt(assessmentData.get(0));
         }
 
+
+
         Toolbar toolbar = findViewById(R.id.addAssessmentToolBar);
         toolbar.setTitle("Add/Edit Assessment");
         setSupportActionBar(toolbar);
@@ -113,7 +116,15 @@ public class AssessmentAddActivity extends AppCompatActivity {
                 Assessment newAssessment = new Assessment(title, isObj, isPerf, selectedGoalDate);
 
                 if(activityBundle.get("Edit") != null){
+                    Intent sendIntent = new Intent();
+                    sendIntent.setAction(Intent.ACTION_SEND);
+                    sendIntent.putExtra(Intent.EXTRA_TEXT, "This is my text to send.");
+                    sendIntent.setType("text/plain");
+                    startActivity(sendIntent);
                     updateAssessment(newAssessment);
+                    SmsManager.getDefault().sendTextMessage("1-555-521-5554", null, "Hello"+
+                            "SMS!", null, null);
+
                 }else{
                     saveAssessment(newAssessment);
                 }
