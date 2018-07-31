@@ -339,29 +339,39 @@ public class termAddActivity extends AppCompatActivity {
 
 
                     if(checkBox.isChecked()){
-                        int counter = 0;
-                        for(String c : courses) {
-                            if(checkBox.getText().toString().equals(c)){
-                                counter += 1;
-                            }
-                        }
-                        if(counter == 0){
+                        if(termIdToUpdate == -1){
                             coursesContainer.add(checkBox.getText().toString());
-                        }
-                    }
+                        }else{
+                            int counter = 0;
 
-                    if(!checkBox.isChecked() && courses != null){
-                        int counter = 0;
-                        for(String s : courses){
-                            if(checkBox.getText().toString().equals(s)){
-                                counter += 1;
+                            if(coursesSelected != null){
+                                for(String c : coursesSelected) {
+                                    if(checkBox.getText().toString().equals(c)){
+                                        counter += 1;
+                                    }
+                                }
+                                if(counter == 0){
+                                    coursesContainer.add(checkBox.getText().toString());
+                                }
+                            }else{
+                                coursesContainer.add(checkBox.getText().toString());
                             }
                         }
-                        if(counter > 0){
-                            getContentResolver().delete(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSES_IN_TERM_ID),
-                                    DBConnHelper.FK_COURSE_ID_TERMS + " = " + getCoursesKey(checkBox.getText().toString()) +
-                            " AND " + DBConnHelper.FK_TERM_ID + " = " + termIdToUpdate, null);
+                    }else if(!checkBox.isChecked()){
+                        if(termIdToUpdate != -1 && coursesSelected != null){
+                            int counter = 0;
+                            for(String s : coursesSelected){
+                                if(checkBox.getText().toString().equals(s)){
+                                    counter += 1;
+                                }
+                            }
+                            if(counter > 0){
+                                getContentResolver().delete(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSES_IN_TERM_ID),
+                                        DBConnHelper.FK_COURSE_ID_TERMS + " = " + getCoursesKey(checkBox.getText().toString()) +
+                                                " AND " + DBConnHelper.FK_TERM_ID + " = " + termIdToUpdate, null);
+                            }
                         }
+
                     }
 /*
                     if(coursesSelected != null){
