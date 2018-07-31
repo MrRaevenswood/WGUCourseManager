@@ -125,6 +125,31 @@ public class CourseActivity extends ListActivity
            }
        });
 
+       editCourse.setNeutralButton("Share", new DialogInterface.OnClickListener() {
+           @Override
+           public void onClick(DialogInterface dialog, int which) {
+               Cursor selectedCourseToShare = (Cursor) l.getItemAtPosition(position);
+
+
+               String courseInfo = "Course Title: " + selectedCourseToShare.getString(selectedCourseToShare.getColumnIndex(DBConnHelper.COURSE_TITLE))
+                       + "\r\n" + "Course Start: " + selectedCourseToShare.getString(selectedCourseToShare.getColumnIndex(DBConnHelper.COURSE_START)) + "\r\n"
+                       +"Course End: " + selectedCourseToShare.getString(selectedCourseToShare.getColumnIndex(DBConnHelper.COURSE_END)) + "\r\n" +
+                       selectedCourseToShare.getString(selectedCourseToShare.getColumnIndex(DBConnHelper.COURSE_STATUS)) + "\r\n" + "Mentor Name: " +
+                       selectedCourseToShare.getString(selectedCourseToShare.getColumnIndex(DBConnHelper.COURSE_MENTOR_NAME)) + "\r\n" + "Mentor Email: " +
+                       selectedCourseToShare.getString(selectedCourseToShare.getColumnIndex(DBConnHelper.COURSE_MENTOR_EMAIL)) + "\r\n" + "Mentor Phone: " +
+                       selectedCourseToShare.getString(selectedCourseToShare.getColumnIndex(DBConnHelper.COURSE_MENTOR_PHONE)) + "\r\n" + "Course Notes: " +
+                       selectedCourseToShare.getString(selectedCourseToShare.getColumnIndex(DBConnHelper.COURSE_NOTES));
+
+               Intent share = new Intent();
+
+               share.setAction(Intent.ACTION_SEND);
+               share.putExtra(Intent.EXTRA_TEXT, courseInfo);
+               share.setType("text/plain");
+               startActivity(share);
+               selectedCourseToShare.close();
+           }
+       });
+
        editCourse.create().show();
    }
 

@@ -287,7 +287,7 @@ public class termAddActivity extends AppCompatActivity {
         showPopupWindow(courses, selectedCourses);
     }
 
-    private void showPopupWindow(ArrayList<String> courses, final ArrayList<String> coursesSelected) {
+    private void showPopupWindow(final ArrayList<String> courses, final ArrayList<String> coursesSelected) {
 
         ConstraintLayout to_add = findViewById(R.id.termAdd);
         ArrayList<View> viewsInOriginalLayout = new ArrayList<>();
@@ -340,7 +340,7 @@ public class termAddActivity extends AppCompatActivity {
 
                     if(checkBox.isChecked()){
                         int counter = 0;
-                        for(String c : coursesSelected) {
+                        for(String c : courses) {
                             if(checkBox.getText().toString().equals(c)){
                                 counter += 1;
                             }
@@ -350,9 +350,9 @@ public class termAddActivity extends AppCompatActivity {
                         }
                     }
 
-                    if(!checkBox.isChecked() && coursesSelected != null){
+                    if(!checkBox.isChecked() && courses != null){
                         int counter = 0;
-                        for(String s : coursesSelected){
+                        for(String s : courses){
                             if(checkBox.getText().toString().equals(s)){
                                 counter += 1;
                             }

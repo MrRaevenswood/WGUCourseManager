@@ -147,6 +147,26 @@ public class TermsActivity extends ListActivity
             }
         });
 
+        editTerm.setNeutralButton("Share", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Cursor selectedTermToShare = (Cursor) l.getItemAtPosition(position);
+
+
+                String termInfo = "Term Title: " + selectedTermToShare.getString(selectedTermToShare.getColumnIndex(DBConnHelper.TERM_TITLE))
+                        + "\r\n" + "Term Start: " + selectedTermToShare.getString(selectedTermToShare.getColumnIndex(DBConnHelper.TERM_START)) + "\r\n"
+                        +"Term End: " + selectedTermToShare.getString(selectedTermToShare.getColumnIndex(DBConnHelper.TERM_END));
+
+                Intent share = new Intent();
+
+                share.setAction(Intent.ACTION_SEND);
+                share.putExtra(Intent.EXTRA_TEXT, termInfo);
+                share.setType("text/plain");
+                startActivity(share);
+                selectedTermToShare.close();
+            }
+        });
+
         editTerm.create().show();
     }
 

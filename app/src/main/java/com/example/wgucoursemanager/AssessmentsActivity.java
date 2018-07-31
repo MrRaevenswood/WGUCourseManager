@@ -92,7 +92,7 @@ public class AssessmentsActivity extends ListActivity
     @Override
     protected void onListItemClick(final ListView l, View v, final int position, long id){
         AlertDialog.Builder editAssessment = new AlertDialog.Builder(this);
-        editAssessment.setTitle("Would you like to edit or delete the selected assessment?");
+        editAssessment.setTitle("Would you like to edit, delete, share the selected assessment?");
 
         editAssessment.setPositiveButton("Edit", new DialogInterface.OnClickListener(){
 
@@ -105,6 +105,8 @@ public class AssessmentsActivity extends ListActivity
                 editAssessment.putExtra("Edit", 1);
                 editAssessment.putStringArrayListExtra("selectedAssessment", getAssessmentData(selectedAssessment));
                 startActivityForResult(editAssessment, ADD_ASSESSMENT_CODE);
+
+                selectedAssessmentFromList.close();
             }
         });
 
@@ -123,7 +125,34 @@ public class AssessmentsActivity extends ListActivity
                 getContentResolver().delete(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.ASSESSMENTS_IN_COURSES_ID),
                         DBConnHelper.FK_ASSESSMENTS_ID_IN_COURSES + " = " + selectedAssessmentDataId, null);
 
+                selectedAssessmentDataToDelete.close();
                 restartLoader();
+            }
+        });
+
+        editAssessment.setNeutralButton("Share", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Cursor selectedAssessmentToShare = (Cursor) l.getItemAtPosition(position);
+
+                String assessmentType = "";
+                if(selectedAssessmentToShare.getString(selectedAssessmentToShare.getColumnIndex
+                        (DBConnHelper.ASSESSMENT_ISPERFORMANCE)).equals("1")){
+                    assessmentType = "Performance";
+                }else
+                    assessmentType = "Objective" ;
+
+                String assessmentInfo = "Assessment Title: " + selectedAssessmentToShare.getString(selectedAssessmentToShare.getColumnIndex(DBConnHelper.ASSESSMENT_TITLE))
+                        + "\r\n" + "Assessment Type: " + assessmentType + "\r\n" +"Goal Date: " +
+                        selectedAssessmentToShare.getString(selectedAssessmentToShare.getColumnIndex(DBConnHelper.ASSESSMENT_GOAL_DATE));
+
+                Intent share = new Intent();
+
+                share.setAction(Intent.ACTION_SEND);
+                share.putExtra(Intent.EXTRA_TEXT, assessmentInfo);
+                share.setType("text/plain");
+                startActivity(share);
+                selectedAssessmentToShare.close();
             }
         });
 

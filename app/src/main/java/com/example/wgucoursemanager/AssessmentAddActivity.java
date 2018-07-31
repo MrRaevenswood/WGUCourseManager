@@ -116,14 +116,7 @@ public class AssessmentAddActivity extends AppCompatActivity {
                 Assessment newAssessment = new Assessment(title, isObj, isPerf, selectedGoalDate);
 
                 if(activityBundle.get("Edit") != null){
-                    Intent sendIntent = new Intent();
-                    sendIntent.setAction(Intent.ACTION_SEND);
-                    sendIntent.putExtra(Intent.EXTRA_TEXT, "This is my text to send.");
-                    sendIntent.setType("text/plain");
-                    startActivity(sendIntent);
                     updateAssessment(newAssessment);
-                    SmsManager.getDefault().sendTextMessage("1-555-521-5554", null, "Hello"+
-                            "SMS!", null, null);
 
                 }else{
                     saveAssessment(newAssessment);
