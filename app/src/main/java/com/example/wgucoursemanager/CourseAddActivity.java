@@ -26,6 +26,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
@@ -37,6 +38,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -149,6 +152,30 @@ public class CourseAddActivity extends AppCompatActivity{
                 }
 
                 break;
+            case R.id.alarms:
+                AlertDialog.Builder currentAlarms = new AlertDialog.Builder(this);
+                String currentAlarmsTitle = "These are the current alarms below: \r\n ";
+
+                SharedPreferences prefs = getSharedPreferences("Alarms", Context.MODE_PRIVATE);
+                Map<String,?> allCurrentAlarms = prefs.getAll();
+                Object[] listOfAlarms = allCurrentAlarms.values().toArray();
+
+                for(int i = 0; i < listOfAlarms.length; i++){
+                   currentAlarmsTitle = currentAlarmsTitle.concat(listOfAlarms[i].toString()) + " \r\n ";
+                }
+
+                currentAlarms.setTitle(currentAlarmsTitle);
+                currentAlarms.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+                AlertDialog aD = currentAlarms.create();
+                aD.getWindow().setLayout(6000,4000);
+                aD.show();
+                break;
+
         }
 
         return false;
