@@ -298,9 +298,12 @@ public class AssessmentAddActivity extends AppCompatActivity {
                 + "-" + dayOfMonth + "T" + hour + ":" + minute + ":00",formatter);
 
         long millisToGoal = current.until(goalDate, ChronoUnit.MILLIS);
-        Intent assessmentGoalService = new Intent(getApplicationContext(), courseAssessmentStartEndNotifier.class);
-        assessmentGoalService.putExtra("notificationType", "assessment");
-        assessmentGoalService.putExtra("millsTillAlarm", millisToGoal);
-        startService(assessmentGoalService);
+
+        if(millisToGoal > 0){
+            Intent assessmentGoalService = new Intent(getApplicationContext(), courseAssessmentStartEndNotifier.class);
+            assessmentGoalService.putExtra("notificationType", "assessment");
+            assessmentGoalService.putExtra("millsTillAlarm", millisToGoal);
+            startService(assessmentGoalService);
+        }
     }
 }

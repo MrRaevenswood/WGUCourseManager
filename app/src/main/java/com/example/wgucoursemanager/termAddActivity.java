@@ -233,8 +233,6 @@ public class termAddActivity extends AppCompatActivity {
         if(newTerm.getCourses() != null) {
             for (Courses c : newTerm.getCourses()) {
                 courseValues.put(DBConnHelper.FK_COURSE_ID_TERMS, getCoursesKey(c.getCourseTitle()));
-            }
-            if (courseValues.size() > 0) {
                 getContentResolver().insert(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSES_IN_TERM_ID),
                         courseValues);
             }

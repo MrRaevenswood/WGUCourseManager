@@ -66,7 +66,7 @@
         </activity>
         <activity
             android:name=".AssessmentAddActivity"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <service
             android:name=".scheduleNotification"
@@ -85,7 +85,7 @@
         <activity
             android:name=".ScheduleNotifier"
             android:label="@string/title_activity_schedule_notifier"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>
