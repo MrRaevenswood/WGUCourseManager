@@ -24,7 +24,7 @@ public class courseAssessmentStartEndNotifier extends Service {
     public IBinder onBind(Intent intent) {
         try {
             createAlertDialog(intent.getStringExtra("notificationType"),
-                    intent.getStringExtra("startOrEnd"),  intent.getLongExtra("millsTillAlarm", 10000));
+                    intent.getStringExtra("startOrEnd"),  intent.getLongExtra("millsTillAlarm", 10000), intent.getStringExtra("Title"));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -36,9 +36,9 @@ public class courseAssessmentStartEndNotifier extends Service {
         try {
             if(intent.getStringExtra("notificationType").equals("course")){
                 createAlertDialog(intent.getStringExtra("notificationType"),
-                        intent.getStringExtra("startOrEnd"),  intent.getLongExtra("millsTillAlarm", 10000));
+                        intent.getStringExtra("startOrEnd"),  intent.getLongExtra("millsTillAlarm", 10000), intent.getStringExtra("Title"));
             }else{
-                createAlertDialog(intent.getStringExtra("notificationType"), null, intent.getLongExtra("millsTillAlarm", 10000));
+                createAlertDialog(intent.getStringExtra("notificationType"), null, intent.getLongExtra("millsTillAlarm", 10000), intent.getStringExtra("Title"));
             }
 
              } catch (InterruptedException e) {
@@ -47,22 +47,23 @@ public class courseAssessmentStartEndNotifier extends Service {
         return Service.START_STICKY;
     }
 
-    public void createAlertDialog(final String notificationType, final String startOrEnd, long timeTillNotification) throws InterruptedException {
+    public void createAlertDialog(final String notificationType, final String startOrEnd, long timeTillNotification, final String title) throws InterruptedException {
 
         Timer task = new Timer();
 
         task.schedule(new TimerTask() {
             @Override
             public void run() {
-                showAlert(notificationType, startOrEnd);
+                showAlert(notificationType, startOrEnd, title);
             }
         }, timeTillNotification);
     }
 
-    public void showAlert(String notificationType, String startOrEnd){
+    public void showAlert(String notificationType, String startOrEnd, String title){
         Intent intent = new Intent(this, ScheduleNotifier.class);
         intent.putExtra("notificationType",notificationType);
         intent.putExtra("startOrEnd", startOrEnd);
+        intent.putExtra("Title", title);
         startActivity(intent);
     }
 

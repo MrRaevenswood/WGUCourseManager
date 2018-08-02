@@ -3,10 +3,12 @@ package com.example.wgucoursemanager;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.LoaderManager;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -121,6 +123,14 @@ public class CourseActivity extends ListActivity
                        DBConnHelper.FK_COURSE_ID_TERMS + " = " + selectedCourseDataId, null);
                getContentResolver().delete(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSES_WITH_ASSESSMENTS_ID),
                        DBConnHelper.FK_COURSE_ID_ASSESSMENTS + " = " + selectedCourseDataId, null);
+
+               SharedPreferences prefs = getSharedPreferences("Alarms", Context.MODE_PRIVATE);
+               SharedPreferences.Editor editor = prefs.edit();
+
+               editor.remove(selectedCourseData + "-Start");
+               editor.remove(selectedCourseData + "-End");
+               editor.commit();
+
                restartLoader();
            }
        });

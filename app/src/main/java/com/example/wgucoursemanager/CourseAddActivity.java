@@ -23,6 +23,7 @@ import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -163,17 +164,35 @@ public class CourseAddActivity extends AppCompatActivity{
                 for(int i = 0; i < listOfAlarms.length; i++){
                    currentAlarmsTitle = currentAlarmsTitle.concat(listOfAlarms[i].toString()) + " \r\n ";
                 }
-
-                currentAlarms.setTitle(currentAlarmsTitle);
+                currentAlarms.setTitle("Current Alarms: \r\n");
+                currentAlarms.setMessage(currentAlarmsTitle);
                 currentAlarms.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
                     }
                 });
+
                 AlertDialog aD = currentAlarms.create();
-                aD.getWindow().setLayout(6000,4000);
                 aD.show();
+
+                DisplayMetrics displayMetrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+
+                int displayWidth = displayMetrics.widthPixels;
+                int displayHeight = displayMetrics.heightPixels;
+
+                WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+                layoutParams.copyFrom(aD.getWindow().getAttributes());
+
+                int displayWindowWidth = (int) (displayWidth * 0.7f);
+                int displayWindowHeight = (int) (displayHeight * 0.7f);
+
+                layoutParams.width = displayWindowWidth;
+                layoutParams.height = displayWindowHeight;
+
+                aD.getWindow().setAttributes(layoutParams);
+
                 break;
 
         }

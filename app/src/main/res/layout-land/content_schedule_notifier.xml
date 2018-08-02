@@ -5,7 +5,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".CurrentAlarmsActivity"
-    tools:showIn="@layout/activity_current_alarms">
+    tools:context=".ScheduleNotifier"
+    >
 
+    <EditText
+        android:id="@+id/alertText"
+        android:layout_width="349dp"
+        android:layout_height="296dp"
+        android:ems="10"
+        android:inputType="textMultiLine"
+        tools:layout_editor_absoluteX="31dp"
+        tools:layout_editor_absoluteY="73dp" />
 </android.support.constraint.ConstraintLayout>

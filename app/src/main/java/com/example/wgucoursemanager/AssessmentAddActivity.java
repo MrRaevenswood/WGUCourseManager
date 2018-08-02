@@ -7,9 +7,11 @@ import android.app.DialogFragment;
 import android.app.TimePickerDialog;
 import android.content.ComponentName;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.IBinder;
@@ -17,9 +19,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.telephony.SmsManager;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
@@ -36,6 +40,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Map;
 
 public class AssessmentAddActivity extends AppCompatActivity {
 
@@ -126,6 +131,49 @@ public class AssessmentAddActivity extends AppCompatActivity {
             case R.id.cancel:
                 Intent returnToAssessmentsView = new Intent(AssessmentAddActivity.this, AssessmentsActivity.class);
                 startActivity(returnToAssessmentsView);
+                break;
+
+            case R.id.alarms:
+                AlertDialog.Builder currentAlarms = new AlertDialog.Builder(this);
+                String currentAlarmsTitle = "These are the current alarms below: \r\n ";
+
+                SharedPreferences prefs = getSharedPreferences("Alarms", Context.MODE_PRIVATE);
+                Map<String,?> allCurrentAlarms = prefs.getAll();
+                Object[] listOfAlarms = allCurrentAlarms.values().toArray();
+
+                for(int i = 0; i < listOfAlarms.length; i++){
+                    currentAlarmsTitle = currentAlarmsTitle.concat(listOfAlarms[i].toString()) + " \r\n ";
+                }
+                currentAlarms.setTitle("Current Alarms: \r\n");
+                currentAlarms.setMessage(currentAlarmsTitle);
+                currentAlarms.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+
+                AlertDialog aD = currentAlarms.create();
+                aD.show();
+
+                DisplayMetrics displayMetrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+
+                int displayWidth = displayMetrics.widthPixels;
+                int displayHeight = displayMetrics.heightPixels;
+
+                WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+                layoutParams.copyFrom(aD.getWindow().getAttributes());
+
+                int displayWindowWidth = (int) (displayWidth * 0.7f);
+                int displayWindowHeight = (int) (displayHeight * 0.7f);
+
+                layoutParams.width = displayWindowWidth;
+                layoutParams.height = displayWindowHeight;
+
+                aD.getWindow().setAttributes(layoutParams);
+
+                break;
         }
         return true;
     }
@@ -212,8 +260,13 @@ public class AssessmentAddActivity extends AppCompatActivity {
             if(String.valueOf(month).length() != 2){
                 monthString = "0".concat(monthString);
             }
+            String day = String.valueOf(dayOfMonth);
+            if(day.length() !=2){
+                day = "0" + day;
+            }
+
                 goalDate.setText( String.valueOf(year) + "-" + monthString + "-"
-                        + String.valueOf(dayOfMonth));
+                        + day);
 
             TimePicker startTimePicker = new TimePicker();
             //startTimePicker.setArguments(args);
@@ -297,13 +350,21 @@ public class AssessmentAddActivity extends AppCompatActivity {
         LocalDateTime current = LocalDateTime.parse(String.valueOf(c.get(Calendar.YEAR)) + "-" + month
                 + "-" + dayOfMonth + "T" + hour + ":" + minute + ":00",formatter);
 
+        SharedPreferences prefs = getSharedPreferences("Alarms", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+
         long millisToGoal = current.until(goalDate, ChronoUnit.MILLIS);
 
         if(millisToGoal > 0){
             Intent assessmentGoalService = new Intent(getApplicationContext(), courseAssessmentStartEndNotifier.class);
             assessmentGoalService.putExtra("notificationType", "assessment");
             assessmentGoalService.putExtra("millsTillAlarm", millisToGoal);
+            assessmentGoalService.putExtra("Title", assessment.getAssessmentTitle());
+            editor.putString(assessment.getAssessmentTitle(), assessment.getAssessmentTitle() + " will fire an alarm at " +
+                assessment.getGoalDate());
             startService(assessmentGoalService);
         }
+
+        editor.commit();
     }
 }
