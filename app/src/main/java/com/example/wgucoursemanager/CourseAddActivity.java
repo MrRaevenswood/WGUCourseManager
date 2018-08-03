@@ -220,23 +220,31 @@ public class CourseAddActivity extends AppCompatActivity{
         updateAssessments.setNegativeButton("No", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                ContentValues values = new ContentValues();
+                try {
+                    Courses updatedCourse = buildCourse(new ArrayList<Integer>());
+                    ContentValues values = new ContentValues();
 
-                values.put(DBConnHelper.COURSE_TITLE, courseTitle.getText().toString());
-                values.put(DBConnHelper.COURSE_START, courseStart.getText().toString());
-                values.put(DBConnHelper.COURSE_END, courseEnd.getText().toString());
-                values.put(DBConnHelper.COURSE_START, status.getText().toString());
-                values.put(DBConnHelper.COURSE_MENTOR_NAME, mentorName.getText().toString());
-                values.put(DBConnHelper.COURSE_MENTOR_EMAIL, mentorEmail.getText().toString());
-                values.put(DBConnHelper.COURSE_MENTOR_PHONE, mentorPhone.getText().toString());
-                values.put(DBConnHelper.COURSE_NOTES, notes.getText().toString());
-                values.put(DBConnHelper.COURSE_RANGE, courseStart.getText().toString() + " - "
-                    + courseEnd.getText().toString());
+                    values.put(DBConnHelper.COURSE_TITLE, updatedCourse.getCourseTitle());
+                    values.put(DBConnHelper.COURSE_START, updatedCourse.getStartDate());
+                    values.put(DBConnHelper.COURSE_END, updatedCourse.getAnticipatedEndDate());
+                    values.put(DBConnHelper.COURSE_MENTOR_NAME, updatedCourse.getMentorName());
+                    values.put(DBConnHelper.COURSE_MENTOR_EMAIL, updatedCourse.getMentorEmail());
+                    values.put(DBConnHelper.COURSE_MENTOR_PHONE, updatedCourse.getMentorPhone());
+                    values.put(DBConnHelper.COURSE_NOTES, updatedCourse.getNotes());
+                    values.put(DBConnHelper.COURSE_RANGE, updatedCourse.getStartDate() + " - "
+                            + updatedCourse.getAnticipatedEndDate());
 
-                getContentResolver().update(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSE_ID),
-                        values, DBConnHelper.PK_COURSE_ID + " = " + courseIdToUpdate, null);
-                setResult(RESULT_OK);
-                finish();
+                    getContentResolver().update(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSE_ID),
+                            values, DBConnHelper.PK_COURSE_ID + " = " + courseIdToUpdate, null);
+
+                    scheduleAlertDialog(updatedCourse);
+
+                    setResult(RESULT_OK);
+                    finish();
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
             }
         });
 
@@ -599,11 +607,11 @@ public class CourseAddActivity extends AppCompatActivity{
         String notesTaken = notes.getText().toString();
         ArrayList<Assessment> allCurrentAssessmentsForCourse = new ArrayList<>();
 
-        for(Integer i : assessments){
-            allCurrentAssessmentsForCourse.add(getAssessmentFromSelected(i));
-        }
-
         if(assessments.isEmpty()){
+            for(Integer i : assessments){
+                allCurrentAssessmentsForCourse.add(getAssessmentFromSelected(i));
+            }
+
             return new Courses(title, start, end, statusString, mentorN, mentorE, mentorP,
                     notesTaken, start + " - " + end);
         }else{
@@ -683,6 +691,7 @@ public class CourseAddActivity extends AppCompatActivity{
             courseStartService.putExtra("notificationType", "course");
             courseStartService.putExtra("startOrEnd", "start");
             courseStartService.putExtra("millsTillAlarm", millisToStart);
+            courseStartService.putExtra("Title", course.getCourseTitle());
             bindService(courseStartService,connection,Context.BIND_AUTO_CREATE);
             editor.putString(course.getCourseTitle() + "-Start", course.getCourseTitle() + " will fire an alarm at " +
                 course.getStartDate());
@@ -693,6 +702,7 @@ public class CourseAddActivity extends AppCompatActivity{
             courseEndService.putExtra("notificationType", "course");
             courseEndService.putExtra("startOrEnd", "end");
             courseEndService.putExtra("millsTillAlarm", millisToEnd);
+            courseEndService.putExtra("Title", course.getCourseTitle());
             editor.putString(course.getCourseTitle() + "-END", course.getCourseTitle() + " will fire an alarm at " +
                 course.getAnticipatedEndDate());
             startService(courseEndService);
