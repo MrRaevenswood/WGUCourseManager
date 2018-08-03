@@ -11,114 +11,122 @@
     <TextView
         android:id="@+id/textView3"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="26dp"
-        android:layout_marginRight="26dp"
-        android:layout_marginTop="122dp"
+        android:layout_height="19dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginRight="32dp"
+        android:layout_marginTop="44dp"
         android:text="Term Title"
         app:layout_constraintEnd_toStartOf="@+id/termTitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/addTermToolBar" />
 
     <TextView
         android:id="@+id/textView8"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="35dp"
-        android:layout_marginStart="35dp"
-        android:layout_marginTop="33dp"
+        android:layout_height="16dp"
+        android:layout_marginBottom="60dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="24dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:text="Term Start Date"
+        app:layout_constraintBottom_toTopOf="@+id/textView9"
+        app:layout_constraintEnd_toStartOf="@+id/termStartDate"
+        app:layout_constraintHorizontal_bias="0.47"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView3" />
+        app:layout_constraintTop_toBottomOf="@+id/textView3"
+        app:layout_constraintVertical_bias="1.0" />
 
     <TextView
         android:id="@+id/textView9"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="35dp"
-        android:layout_marginStart="35dp"
-        android:layout_marginTop="37dp"
+        android:layout_height="21dp"
+        android:layout_marginBottom="100dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="24dp"
+        android:layout_marginStart="8dp"
         android:text="Term End Date"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView8" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/termEndDate"
+        app:layout_constraintHorizontal_bias="0.47"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/termStartDate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginTop="33dp"
+        android:layout_width="193dp"
+        android:layout_height="38dp"
+        android:layout_marginBottom="40dp"
+        android:layout_marginEnd="40dp"
+        android:layout_marginRight="40dp"
+        android:layout_marginTop="8dp"
         android:onClick="showStartDatePickerDialog"
         android:text="@string/click_here_to_select_date"
-        app:layout_constraintEnd_toEndOf="@+id/termTitle"
-        app:layout_constraintTop_toBottomOf="@+id/termTitle" />
+        app:layout_constraintBottom_toTopOf="@+id/termEndDate"
+        app:layout_constraintEnd_toStartOf="@+id/associatedCoursesList"
+        app:layout_constraintTop_toBottomOf="@+id/termTitle"
+        app:layout_constraintVertical_bias="1.0" />
 
     <TextView
         android:id="@+id/termEndDate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="37dp"
+        android:layout_width="192dp"
+        android:layout_height="37dp"
+        android:layout_marginBottom="100dp"
+        android:layout_marginEnd="44dp"
+        android:layout_marginRight="44dp"
         android:onClick="showEndDatePickerDialog"
         android:text="@string/click_here_to_select_date"
-        app:layout_constraintStart_toStartOf="@+id/termStartDate"
-        app:layout_constraintTop_toBottomOf="@+id/termStartDate" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/associatedCoursesList" />
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/addTermToolBar"
-        android:layout_width="0dp"
+        android:layout_width="683dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="230dp"
         android:background="?attr/colorPrimary"
         android:minHeight="?attr/actionBarSize"
-        android:theme="?attr/actionBarTheme"
-        app:layout_constraintBottom_toTopOf="@+id/textView2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:theme="?attr/actionBarTheme" />
 
     <EditText
         android:id="@+id/termTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="33dp"
-        android:layout_marginEnd="3dp"
-        android:layout_marginRight="3dp"
-        android:layout_marginTop="40dp"
+        android:layout_width="192dp"
+        android:layout_height="51dp"
+        android:layout_marginEnd="40dp"
+        android:layout_marginRight="40dp"
+        android:layout_marginTop="12dp"
         android:ems="10"
         android:inputType="textPersonName"
         android:text="Name"
-        app:layout_constraintBottom_toTopOf="@+id/textView8"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/textView3"
+        app:layout_constraintEnd_toStartOf="@+id/associatedCoursesList"
         app:layout_constraintTop_toBottomOf="@+id/addTermToolBar" />
-
-    <ListView
-        android:id="@+id/associatedCoursesList"
-        android:layout_width="0dp"
-        android:layout_height="312dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginStart="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
     <TextView
         android:id="@+id/textView2"
         android:layout_width="221dp"
-        android:layout_height="0dp"
+        android:layout_height="30dp"
         android:layout_marginBottom="8dp"
+        android:layout_marginEnd="48dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="48dp"
+        android:layout_marginStart="8dp"
         android:text="Associated Courses"
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/associatedCoursesList"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/addTermToolBar" />
+        app:layout_constraintTop_toBottomOf="@+id/addTermToolBar"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <ListView
+        android:id="@+id/associatedCoursesList"
+        android:layout_width="286dp"
+        android:layout_height="301dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 
 </android.support.constraint.ConstraintLayout>
