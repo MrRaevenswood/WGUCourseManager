@@ -1,15 +1,25 @@
 package com.example.wgucoursemanager;
 
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.widget.Toast;
 
 import java.io.FileDescriptor;
@@ -33,6 +43,9 @@ public class courseAssessmentStartEndNotifier extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId){
+
+        if(intent.getExtras() == null){return Service.START_STICKY;}
+
         try {
             if(intent.getStringExtra("notificationType").equals("course")){
                 createAlertDialog(intent.getStringExtra("notificationType"),
@@ -49,22 +62,38 @@ public class courseAssessmentStartEndNotifier extends Service {
 
     public void createAlertDialog(final String notificationType, final String startOrEnd, long timeTillNotification, final String title) throws InterruptedException {
 
-        Timer task = new Timer();
+        //Timer task = new Timer();
+        String contentTitle = "";
 
+        if(notificationType.equals("course")) {
+
+            if (startOrEnd.equals("start")) {
+                contentTitle = title + " course is about to start ";
+            } else if (startOrEnd.equals("end")) {
+                contentTitle = title +" course is about to end ";
+            }
+        }else if(notificationType.equals("assessment")){
+            contentTitle = title +  " assessment is about to end";
+        }
+
+
+                //.setContentIntent(pendingIntent).build();
+
+
+/*
         task.schedule(new TimerTask() {
             @Override
             public void run() {
                 showAlert(notificationType, startOrEnd, title);
+                NotificationManager notify = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                Intent notifyIntent = new Intent(courseAssessmentStartEndNotifier.this, NotificationReceiver.class);
+
             }
-        }, timeTillNotification);
+        }, timeTillNotification);*/
     }
 
     public void showAlert(String notificationType, String startOrEnd, String title){
-        Intent intent = new Intent(this, ScheduleNotifier.class);
-        intent.putExtra("notificationType",notificationType);
-        intent.putExtra("startOrEnd", startOrEnd);
-        intent.putExtra("Title", title);
-        startActivity(intent);
+
     }
 
 

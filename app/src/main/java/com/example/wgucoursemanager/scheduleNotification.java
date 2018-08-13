@@ -11,9 +11,9 @@ public class scheduleNotification extends JobService {
     @Override
     public boolean onStartJob(JobParameters params) {
 
-        Intent service = new Intent(getApplicationContext(), courseAssessmentStartEndNotifier.class );
-        getApplicationContext().startService(service);
-        NotificationUtil.scheduleNotification(getApplicationContext(), params.getExtras().getLong("timeTillNotification"));
+       // Intent service = new Intent(getApplicationContext(), courseAssessmentStartEndNotifier.class );
+       // getApplicationContext().startService(service);
+       // NotificationUtil.scheduleNotification(getApplicationContext(), params.getExtras().getLong("timeTillNotification"));
         return false;
     }
 

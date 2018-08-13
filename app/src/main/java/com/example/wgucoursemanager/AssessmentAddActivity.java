@@ -1,16 +1,17 @@
 package com.example.wgucoursemanager;
 
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
@@ -35,6 +36,7 @@ import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -308,19 +310,7 @@ public class AssessmentAddActivity extends AppCompatActivity {
             goalDate.append("T" + hourString + ":" + minuteString + ":00");
         }
     }
-    private ServiceConnection connection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            courseAssessmentStartEndNotifier.MyBinder b = (courseAssessmentStartEndNotifier.MyBinder) service;
-            s = b.getService();
-            //Toast.makeText(CourseAddActivity.this, "Notifier is On!", Toast.LENGTH_SHORT).show();
-        }
 
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            s = null;
-        }
-    };
     private void scheduleAlertDialog(Assessment assessment) {
 
         Calendar c = Calendar.getInstance();
@@ -344,11 +334,15 @@ public class AssessmentAddActivity extends AppCompatActivity {
         if (minute.length() != 2) {
             minute = "0" + minute;
         }
+        String second = String.valueOf(c.get(Calendar.SECOND));
+        if(second.length() != 2){
+            second = "0" + second;
+        }
 
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
         LocalDateTime goalDate = LocalDateTime.parse(assessment.getGoalDate(), formatter);
         LocalDateTime current = LocalDateTime.parse(String.valueOf(c.get(Calendar.YEAR)) + "-" + month
-                + "-" + dayOfMonth + "T" + hour + ":" + minute + ":00",formatter);
+                + "-" + dayOfMonth + "T" + hour + ":" + minute + ":" +second,formatter);
 
         SharedPreferences prefs = getSharedPreferences("Alarms", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
@@ -356,13 +350,17 @@ public class AssessmentAddActivity extends AppCompatActivity {
         long millisToGoal = current.until(goalDate, ChronoUnit.MILLIS);
 
         if(millisToGoal > 0){
-            Intent assessmentGoalService = new Intent(getApplicationContext(), courseAssessmentStartEndNotifier.class);
-            assessmentGoalService.putExtra("notificationType", "assessment");
-            assessmentGoalService.putExtra("millsTillAlarm", millisToGoal);
-            assessmentGoalService.putExtra("Title", assessment.getAssessmentTitle());
-            editor.putString(assessment.getAssessmentTitle(), assessment.getAssessmentTitle() + " will fire an alarm at " +
-                assessment.getGoalDate());
-            startService(assessmentGoalService);
+            Intent notifiyIntent = new Intent(getApplicationContext(), NotificationReceiver.class);
+            notifiyIntent.putExtra("title", assessment.getAssessmentTitle());
+            notifiyIntent.putExtra("timeTill", millisToGoal);
+            notifiyIntent.putExtra("notify", "assessment");
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, notifiyIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+
+
+            AlarmManager alarmManager = (AlarmManager) getBaseContext().getSystemService(Context.ALARM_SERVICE);
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, c.getTimeInMillis() + millisToGoal, pendingIntent);
+
         }
 
         editor.commit();

@@ -685,7 +685,7 @@ public class CourseAddActivity extends AppCompatActivity{
 
         SharedPreferences prefs = getSharedPreferences("Alarms", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-
+/*
         if(millisToStart > 0){
             Intent courseStartService = new Intent(getApplicationContext(), courseAssessmentStartEndNotifier.class);
             courseStartService.putExtra("notificationType", "course");
@@ -706,7 +706,7 @@ public class CourseAddActivity extends AppCompatActivity{
             editor.putString(course.getCourseTitle() + "-END", course.getCourseTitle() + " will fire an alarm at " +
                 course.getAnticipatedEndDate());
             startService(courseEndService);
-        }
+        }*/
 
         editor.commit();
     }
