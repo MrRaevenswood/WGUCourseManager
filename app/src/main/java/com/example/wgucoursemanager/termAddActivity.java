@@ -5,8 +5,10 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
@@ -14,9 +16,11 @@ import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ListView;
@@ -31,6 +35,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Map;
 
 public class termAddActivity extends AppCompatActivity {
 
@@ -140,6 +145,47 @@ public class termAddActivity extends AppCompatActivity {
                 }
 
                 break;
+            case R.id.alarms:
+                AlertDialog.Builder currentAlarms = new AlertDialog.Builder(this);
+                String currentAlarmsTitle = "These are the current alarms below: \r\n ";
+
+                SharedPreferences prefs = getSharedPreferences("Alarms", Context.MODE_PRIVATE);
+                Map<String,?> allCurrentAlarms = prefs.getAll();
+                Object[] listOfAlarms = allCurrentAlarms.values().toArray();
+
+                for(int i = 0; i < listOfAlarms.length; i++){
+                    currentAlarmsTitle = currentAlarmsTitle.concat(listOfAlarms[i].toString()) + " \r\n ";
+                }
+                currentAlarms.setTitle("Current Alarms: \r\n");
+                currentAlarms.setMessage(currentAlarmsTitle);
+                currentAlarms.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+
+                AlertDialog aD = currentAlarms.create();
+                aD.show();
+
+                DisplayMetrics displayMetrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+
+                int displayWidth = displayMetrics.widthPixels;
+                int displayHeight = displayMetrics.heightPixels;
+
+                WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+                layoutParams.copyFrom(aD.getWindow().getAttributes());
+
+                int displayWindowWidth = (int) (displayWidth * 0.7f);
+                int displayWindowHeight = (int) (displayHeight * 0.7f);
+
+                layoutParams.width = displayWindowWidth;
+                layoutParams.height = displayWindowHeight;
+
+                aD.getWindow().setAttributes(layoutParams);
+
+                break;
         }
 
         return true;
@@ -233,8 +279,6 @@ public class termAddActivity extends AppCompatActivity {
         if(newTerm.getCourses() != null) {
             for (Courses c : newTerm.getCourses()) {
                 courseValues.put(DBConnHelper.FK_COURSE_ID_TERMS, getCoursesKey(c.getCourseTitle()));
-            }
-            if (courseValues.size() > 0) {
                 getContentResolver().insert(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSES_IN_TERM_ID),
                         courseValues);
             }

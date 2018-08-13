@@ -16,14 +16,14 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".CourseActivity"
             android:label="@string/title_activity_course"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:configChanges="orientation|keyboardHidden">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.wgucoursemanager.MainActivity" />
@@ -31,7 +31,8 @@
         <activity
             android:name=".TermsActivity"
             android:label="@string/title_activity_terms"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:configChanges="orientation|keyboardHidden">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.wgucoursemanager.MainActivity" />
@@ -39,7 +40,8 @@
         <activity
             android:name=".AssessmentsActivity"
             android:label="@string/title_activity_assessments"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:configChanges="orientation|keyboardHidden">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.wgucoursemanager.MainActivity" />
@@ -49,7 +51,8 @@
             android:label="@string/title_activity_term"
             android:parentActivityName=".TermsActivity"
             android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustPan">
+            android:windowSoftInputMode="adjustPan"
+            android:configChanges="orientation|keyboardHidden">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.wgucoursemanager.TermsActivity" />
@@ -59,33 +62,31 @@
             android:label="courseAdd"
             android:parentActivityName=".CourseActivity"
             android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustPan">
+            android:windowSoftInputMode="adjustPan"
+            android:configChanges="orientation|keyboardHidden">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.wgucoursemanager.CourseActivity" />
         </activity>
         <activity
             android:name=".AssessmentAddActivity"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar"
+            android:configChanges="orientation|keyboardHidden"/>
 
-        <service
-            android:name=".scheduleNotification"
-            android:label="Notification Service"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
         <service
             android:name=".courseAssessmentStartEndNotifier"
             android:label="Schedule Notification" />
 
-        <receiver android:name=".NotificationReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
+        <receiver android:name=".NotificationReceiver"
+                android:enabled="true"
+                android:exported="false">
         </receiver>
 
         <activity
             android:name=".ScheduleNotifier"
             android:label="@string/title_activity_schedule_notifier"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar"
+            android:configChanges="orientation|keyboardHidden"/>
     </application>
 
 </manifest>

@@ -10,6 +10,7 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -22,9 +23,11 @@ import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
@@ -36,6 +39,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -148,6 +153,48 @@ public class CourseAddActivity extends AppCompatActivity{
                 }
 
                 break;
+            case R.id.alarms:
+                AlertDialog.Builder currentAlarms = new AlertDialog.Builder(this);
+                String currentAlarmsTitle = "These are the current alarms below: \r\n ";
+
+                SharedPreferences prefs = getSharedPreferences("Alarms", Context.MODE_PRIVATE);
+                Map<String,?> allCurrentAlarms = prefs.getAll();
+                Object[] listOfAlarms = allCurrentAlarms.values().toArray();
+
+                for(int i = 0; i < listOfAlarms.length; i++){
+                   currentAlarmsTitle = currentAlarmsTitle.concat(listOfAlarms[i].toString()) + " \r\n ";
+                }
+                currentAlarms.setTitle("Current Alarms: \r\n");
+                currentAlarms.setMessage(currentAlarmsTitle);
+                currentAlarms.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+
+                AlertDialog aD = currentAlarms.create();
+                aD.show();
+
+                DisplayMetrics displayMetrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+
+                int displayWidth = displayMetrics.widthPixels;
+                int displayHeight = displayMetrics.heightPixels;
+
+                WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+                layoutParams.copyFrom(aD.getWindow().getAttributes());
+
+                int displayWindowWidth = (int) (displayWidth * 0.7f);
+                int displayWindowHeight = (int) (displayHeight * 0.7f);
+
+                layoutParams.width = displayWindowWidth;
+                layoutParams.height = displayWindowHeight;
+
+                aD.getWindow().setAttributes(layoutParams);
+
+                break;
+
         }
 
         return false;
@@ -173,23 +220,31 @@ public class CourseAddActivity extends AppCompatActivity{
         updateAssessments.setNegativeButton("No", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                ContentValues values = new ContentValues();
+                try {
+                    Courses updatedCourse = buildCourse(new ArrayList<Integer>());
+                    ContentValues values = new ContentValues();
 
-                values.put(DBConnHelper.COURSE_TITLE, courseTitle.getText().toString());
-                values.put(DBConnHelper.COURSE_START, courseStart.getText().toString());
-                values.put(DBConnHelper.COURSE_END, courseEnd.getText().toString());
-                values.put(DBConnHelper.COURSE_START, status.getText().toString());
-                values.put(DBConnHelper.COURSE_MENTOR_NAME, mentorName.getText().toString());
-                values.put(DBConnHelper.COURSE_MENTOR_EMAIL, mentorEmail.getText().toString());
-                values.put(DBConnHelper.COURSE_MENTOR_PHONE, mentorPhone.getText().toString());
-                values.put(DBConnHelper.COURSE_NOTES, notes.getText().toString());
-                values.put(DBConnHelper.COURSE_RANGE, courseStart.getText().toString() + " - "
-                    + courseEnd.getText().toString());
+                    values.put(DBConnHelper.COURSE_TITLE, updatedCourse.getCourseTitle());
+                    values.put(DBConnHelper.COURSE_START, updatedCourse.getStartDate());
+                    values.put(DBConnHelper.COURSE_END, updatedCourse.getAnticipatedEndDate());
+                    values.put(DBConnHelper.COURSE_MENTOR_NAME, updatedCourse.getMentorName());
+                    values.put(DBConnHelper.COURSE_MENTOR_EMAIL, updatedCourse.getMentorEmail());
+                    values.put(DBConnHelper.COURSE_MENTOR_PHONE, updatedCourse.getMentorPhone());
+                    values.put(DBConnHelper.COURSE_NOTES, updatedCourse.getNotes());
+                    values.put(DBConnHelper.COURSE_RANGE, updatedCourse.getStartDate() + " - "
+                            + updatedCourse.getAnticipatedEndDate());
 
-                getContentResolver().update(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSE_ID),
-                        values, DBConnHelper.PK_COURSE_ID + " = " + courseIdToUpdate, null);
-                setResult(RESULT_OK);
-                finish();
+                    getContentResolver().update(Uri.parse(WGUProvider.CONTENT_URI + "/" + WGUProvider.COURSE_ID),
+                            values, DBConnHelper.PK_COURSE_ID + " = " + courseIdToUpdate, null);
+
+                    scheduleAlertDialog(updatedCourse);
+
+                    setResult(RESULT_OK);
+                    finish();
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
             }
         });
 
@@ -273,7 +328,8 @@ public class CourseAddActivity extends AppCompatActivity{
             for(Assessment A : newCourse.getObjectiveAssessment()){
 
                 assessmentValues.put(DBConnHelper.FK_ASSESSMENTS_ID_IN_COURSES,getAssessmentKey(A.getAssessmentTitle()));
-
+                getContentResolver().insert(Uri.parse(WGUProvider.CONTENT_URI + "/" +
+                        WGUProvider.ASSESSMENTS_IN_COURSES_ID), assessmentValues);
             }
 
         }else if(newCourse.getObjectiveAssessment().isEmpty()
@@ -281,13 +337,10 @@ public class CourseAddActivity extends AppCompatActivity{
 
             for(Assessment A : newCourse.getPerformanceAssessment()){
                 assessmentValues.put(DBConnHelper.FK_ASSESSMENTS_ID_IN_COURSES, getAssessmentKey(A.getAssessmentTitle()));
+                getContentResolver().insert(Uri.parse(WGUProvider.CONTENT_URI + "/" +
+                        WGUProvider.ASSESSMENTS_IN_COURSES_ID), assessmentValues);
             }
 
-        }
-
-        if(assessmentValues.size() > 1){
-            getContentResolver().insert(Uri.parse(WGUProvider.CONTENT_URI + "/" +
-                    WGUProvider.ASSESSMENTS_IN_COURSES_ID), assessmentValues);
         }
 
         setResult(RESULT_OK);
@@ -479,6 +532,7 @@ public class CourseAddActivity extends AppCompatActivity{
         ArrayList<String> objectiveAssessmentTitles = new ArrayList<>();
 
         Cursor assignmentsToPopulate = getAllCurrentAssessments();
+        assignmentsToPopulate.moveToNext();
 
         if(assignmentsToPopulate.getCount() != 0){
             do{
@@ -553,11 +607,11 @@ public class CourseAddActivity extends AppCompatActivity{
         String notesTaken = notes.getText().toString();
         ArrayList<Assessment> allCurrentAssessmentsForCourse = new ArrayList<>();
 
-        for(Integer i : assessments){
-            allCurrentAssessmentsForCourse.add(getAssessmentFromSelected(i));
-        }
-
         if(assessments.isEmpty()){
+            for(Integer i : assessments){
+                allCurrentAssessmentsForCourse.add(getAssessmentFromSelected(i));
+            }
+
             return new Courses(title, start, end, statusString, mentorN, mentorE, mentorP,
                     notesTaken, start + " - " + end);
         }else{
@@ -629,17 +683,32 @@ public class CourseAddActivity extends AppCompatActivity{
         long millisToStart = current.until(startDate, ChronoUnit.MILLIS);
         long millisToEnd = current.until(endDate, ChronoUnit.MILLIS);
 
-        Intent courseStartService = new Intent(getApplicationContext(), courseAssessmentStartEndNotifier.class);
-        courseStartService.putExtra("notificationType", "course");
-        courseStartService.putExtra("startOrEnd", "start");
-        courseStartService.putExtra("millsTillAlarm", millisToStart);
-        bindService(courseStartService,connection,Context.BIND_AUTO_CREATE);
+        SharedPreferences prefs = getSharedPreferences("Alarms", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+/*
+        if(millisToStart > 0){
+            Intent courseStartService = new Intent(getApplicationContext(), courseAssessmentStartEndNotifier.class);
+            courseStartService.putExtra("notificationType", "course");
+            courseStartService.putExtra("startOrEnd", "start");
+            courseStartService.putExtra("millsTillAlarm", millisToStart);
+            courseStartService.putExtra("Title", course.getCourseTitle());
+            bindService(courseStartService,connection,Context.BIND_AUTO_CREATE);
+            editor.putString(course.getCourseTitle() + "-Start", course.getCourseTitle() + " will fire an alarm at " +
+                course.getStartDate());
+        }
 
-        Intent courseEndService = new Intent(getApplicationContext(), courseAssessmentStartEndNotifier.class);
-        courseEndService.putExtra("notificationType", "course");
-        courseEndService.putExtra("startOrEnd", "end");
-        courseEndService.putExtra("millsTillAlarm", millisToEnd);
-        startService(courseEndService);
+        if(millisToEnd > 0){
+            Intent courseEndService = new Intent(getApplicationContext(), courseAssessmentStartEndNotifier.class);
+            courseEndService.putExtra("notificationType", "course");
+            courseEndService.putExtra("startOrEnd", "end");
+            courseEndService.putExtra("millsTillAlarm", millisToEnd);
+            courseEndService.putExtra("Title", course.getCourseTitle());
+            editor.putString(course.getCourseTitle() + "-END", course.getCourseTitle() + " will fire an alarm at " +
+                course.getAnticipatedEndDate());
+            startService(courseEndService);
+        }*/
+
+        editor.commit();
     }
 
     public void showStartDatePickerDialog(View view){
@@ -689,13 +758,17 @@ public class CourseAddActivity extends AppCompatActivity{
             if(String.valueOf(month).length() != 2){
                 monthString = "0".concat(monthString);
             }
+            String dayString = String.valueOf(dayOfMonth);
+            if(dayString.length() !=2){
+                dayString = "0".concat(dayString);
+            }
             if(this.getArguments().containsKey("startDate")){
                 courseStart.setText( String.valueOf(year) + "-" + monthString + "-"
-                        + String.valueOf(dayOfMonth));
+                        + dayString);
                 args.putString("startDate","startDate");
             }else if(this.getArguments().containsKey("endDate")){
                 courseEnd.setText(String.valueOf(year) + "-" + monthString + "-"
-                        + String.valueOf(dayOfMonth));
+                        + dayString);
                 args.putString("endDate", "endDate");
             }
 

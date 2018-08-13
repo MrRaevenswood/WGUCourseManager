@@ -1,5 +1,7 @@
 package com.example.wgucoursemanager;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -20,26 +22,25 @@ public class ScheduleNotifier extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         alertText = findViewById(R.id.alertText);
+        SharedPreferences prefs = getSharedPreferences("Alarms", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
 
         if(getIntent().getStringExtra("notificationType").equals("course")) {
 
             if (getIntent().getStringExtra("startOrEnd").equals("start")) {
-                alertText.setText("Course is about to start ");
+                alertText.setText(getIntent().getStringExtra("Title") + " course is about to start ");
+                editor.remove(getIntent().getStringExtra("Title"));
             } else if (getIntent().getStringExtra("startOrEnd").equals("end")) {
-                alertText.setText("Course is about to end ");
+                alertText.setText(getIntent().getStringExtra("Title") +" course is about to end ");
+                editor.remove(getIntent().getStringExtra("Title"));
             }
         }else if(getIntent().getStringExtra("notificationType").equals("assessment")){
-            alertText.setText("Assessment is about to end");
+            alertText.setText(getIntent().getStringExtra("Title") + " assessment is about to end");
+            editor.remove(getIntent().getStringExtra("Title"));
         }
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        editor.commit();
+
     }
 
 }

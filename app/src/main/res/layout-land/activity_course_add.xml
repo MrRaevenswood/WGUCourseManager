@@ -14,36 +14,34 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="39dp"
+        android:layout_marginTop="8dp"
         android:text="Course End Date"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView5" />
+        app:layout_constraintTop_toTopOf="@+id/courseEndDate" />
 
     <TextView
         android:id="@+id/textView12"
         android:layout_width="wrap_content"
         android:layout_height="19dp"
-        android:layout_marginBottom="92dp"
+        android:layout_marginBottom="57dp"
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="88dp"
+        android:layout_marginTop="51dp"
         android:text="Mentor Phone"
-        app:layout_constraintBottom_toBottomOf="@+id/textView13"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/textView11" />
+        app:layout_constraintTop_toTopOf="@+id/textView10" />
 
     <EditText
         android:id="@+id/mentorName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginTop="35dp"
+        android:layout_marginBottom="22dp"
         android:ems="10"
         android:hint="Mentor Name"
         android:inputType="textPersonName"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/status" />
+        app:layout_constraintBottom_toTopOf="@+id/mentorPhone"
+        app:layout_constraintStart_toStartOf="@+id/mentorPhone" />
 
     <EditText
         android:id="@+id/mentorEmail"
@@ -51,50 +49,49 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
-        android:layout_marginTop="39dp"
+        android:layout_marginTop="16dp"
         android:ems="10"
         android:hint="Mentor Email"
         android:inputType="textPersonName"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/mentorName" />
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
     <TextView
         android:id="@+id/textView4"
         android:layout_width="wrap_content"
         android:layout_height="27dp"
-        android:layout_marginBottom="72dp"
+        android:layout_marginBottom="22dp"
         android:layout_marginLeft="16dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="72dp"
+        android:layout_marginTop="24dp"
         android:text="Course Title"
-        app:layout_constraintBottom_toBottomOf="@+id/textView5"
+        app:layout_constraintBottom_toTopOf="@+id/courseStartDate"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
     <EditText
         android:id="@+id/mentorPhone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="106dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginRight="24dp"
+        android:layout_marginBottom="31dp"
         android:ems="10"
         android:hint="Mentor Phone Number"
         android:inputType="textPersonName"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="@+id/courseStartDate"
+        app:layout_constraintStart_toStartOf="@+id/courseStartDate" />
 
     <EditText
         android:id="@+id/courseTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginTop="18dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginRight="12dp"
+        android:layout_marginTop="16dp"
         android:ems="10"
         android:hint="Name"
         android:inputType="textPersonName"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/textView11"
         app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
     <EditText
@@ -103,118 +100,107 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="12dp"
         android:ems="10"
         android:hint="Status"
         android:inputType="textPersonName"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/courseEndDate" />
+        app:layout_constraintTop_toBottomOf="@+id/mentorEmail" />
 
     <TextView
         android:id="@+id/textView5"
         android:layout_width="wrap_content"
         android:layout_height="24dp"
-        android:layout_marginBottom="23dp"
         android:layout_marginLeft="16dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="23dp"
         android:text="Course Start Date"
-        app:layout_constraintBottom_toTopOf="@+id/courseEndDate"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/courseStartDate" />
+        app:layout_constraintBaseline_toBaselineOf="@+id/courseStartDate"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/textView10"
         android:layout_width="wrap_content"
-        android:layout_height="19dp"
-        android:layout_marginBottom="143dp"
-        android:layout_marginLeft="14dp"
-        android:layout_marginStart="14dp"
-        android:layout_marginTop="143dp"
+        android:layout_height="20dp"
+        android:layout_marginBottom="107dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="105dp"
         android:text="Mentor Name"
-        app:layout_constraintBottom_toTopOf="@+id/textView12"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/textView6" />
+        app:layout_constraintTop_toBottomOf="@+id/textView5" />
 
     <EditText
         android:id="@+id/courseEndDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginTop="25dp"
+        android:layout_marginBottom="10dp"
         android:ems="10"
         android:hint="Click to Add Date"
         android:inputType="textPersonName"
         android:onClick="showEndDatePickerDialog"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/courseStartDate" />
+        app:layout_constraintBottom_toTopOf="@+id/mentorName"
+        app:layout_constraintStart_toStartOf="@+id/mentorName" />
 
     <TextView
         android:id="@+id/textView13"
         android:layout_width="wrap_content"
         android:layout_height="24dp"
-        android:layout_marginBottom="33dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="31dp"
+        android:layout_marginBottom="68dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="66dp"
         android:text="Notes"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/notes" />
+        app:layout_constraintBottom_toBottomOf="@+id/mentorName"
+        app:layout_constraintEnd_toStartOf="@+id/notes"
+        app:layout_constraintTop_toTopOf="@+id/textView7" />
 
     <TextView
         android:id="@+id/textView7"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="41dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
         android:text="Status"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView6" />
+        app:layout_constraintBaseline_toBaselineOf="@+id/status"
+        app:layout_constraintEnd_toStartOf="@+id/status" />
 
     <TextView
         android:id="@+id/textView11"
         android:layout_width="wrap_content"
         android:layout_height="26dp"
-        android:layout_marginBottom="173dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="173dp"
+        android:layout_marginBottom="23dp"
+        android:layout_marginTop="24dp"
         android:text="Mentor Email"
-        app:layout_constraintBottom_toBottomOf="@+id/textView13"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/status" />
+        app:layout_constraintBottom_toTopOf="@+id/status"
+        app:layout_constraintEnd_toStartOf="@+id/mentorEmail"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
     <EditText
         android:id="@+id/courseStartDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginTop="13dp"
+        android:layout_marginTop="12dp"
         android:ems="10"
         android:hint="Click to Add Date"
         android:inputType="textPersonName"
         android:onClick="showStartDatePickerDialog"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/courseTitle"
         app:layout_constraintTop_toBottomOf="@+id/courseTitle" />
 
     <EditText
         android:id="@+id/notes"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:layout_marginBottom="23dp"
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
-        android:layout_marginTop="18dp"
+        android:layout_marginTop="1dp"
         android:ems="10"
         android:hint="Add Notes Here"
         android:inputType="textMultiLine"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/mentorPhone"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/mentorPhone" />
+        app:layout_constraintTop_toTopOf="@+id/courseEndDate" />
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
@@ -225,6 +211,7 @@
         android:theme="@style/AppTheme.NoActionBar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:titleTextColor="@android:color/white" />
 
 </android.support.constraint.ConstraintLayout>
