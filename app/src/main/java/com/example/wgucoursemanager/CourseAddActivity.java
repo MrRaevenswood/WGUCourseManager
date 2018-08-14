@@ -64,7 +64,6 @@ public class CourseAddActivity extends AppCompatActivity{
     private Bundle activityBundle;
     private int courseIdToUpdate = -1;
     private int allowSaveCancel = 1;
-    private courseAssessmentStartEndNotifier s;
     private String[] statusItems = {" ", "In Progress", "Completed" , "Dropped","Plan to Take"};
 
     @Override

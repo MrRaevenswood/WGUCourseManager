@@ -73,10 +73,6 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:configChanges="orientation|keyboardHidden"/>
 
-        <service
-            android:name=".courseAssessmentStartEndNotifier"
-            android:label="Schedule Notification" />
-
         <receiver android:name=".NotificationReceiver"
                 android:enabled="true"
                 android:exported="false">

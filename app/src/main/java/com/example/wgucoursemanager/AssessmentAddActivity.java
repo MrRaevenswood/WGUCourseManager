@@ -52,7 +52,6 @@ public class AssessmentAddActivity extends AppCompatActivity {
     private static TextView goalDate;
     private Bundle activityBundle;
     private int assessmentIdToUpdate;
-    private courseAssessmentStartEndNotifier s;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
