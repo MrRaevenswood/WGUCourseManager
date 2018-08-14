@@ -24,4 +24,11 @@
     <string name="close_app">Close App</string>
     <string name="title_activity_schedule_notifier">ScheduleNotifier</string>
     <string name="title_activity_current_alarms">CurrentAlarmsActivity</string>
+    <array name="status_array">
+        <item> </item>
+        <item>In Progress</item>
+        <item>Completed</item>
+        <item>Dropped</item>
+        <item>Plan to Take</item>
+    </array>
 </resources>

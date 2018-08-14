@@ -1,9 +1,12 @@
 package com.example.wgucoursemanager;
 
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.ComponentName;
 import android.content.ContentValues;
@@ -30,6 +33,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.Spinner;
 import android.widget.TextView;
 import java.text.ParseException;
 import java.time.LocalDateTime;
@@ -52,7 +56,7 @@ public class CourseAddActivity extends AppCompatActivity{
     private static TextView courseTitle;
     private static TextView courseStart;
     private static TextView courseEnd;
-    private static TextView status;
+    private static Spinner status;
     private static TextView mentorName;
     private static TextView mentorEmail;
     private static TextView mentorPhone;
@@ -61,6 +65,7 @@ public class CourseAddActivity extends AppCompatActivity{
     private int courseIdToUpdate = -1;
     private int allowSaveCancel = 1;
     private courseAssessmentStartEndNotifier s;
+    private String[] statusItems = {" ", "In Progress", "Completed" , "Dropped","Plan to Take"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -79,11 +84,15 @@ public class CourseAddActivity extends AppCompatActivity{
         activityBundle = getIntent().getExtras();
         if(activityBundle.get("Edit") != null){
             ArrayList<String> courseData = activityBundle.getStringArrayList("selectedCourse");
+            for(int i = 0; i < statusItems.length; i++){
+                if(statusItems[i].equals(courseData.get(4))){
+                    status.setSelection(i);
+                }
+            }
 
             courseTitle.setText(courseData.get(1));
             courseStart.setText(courseData.get(2));
             courseEnd.setText(courseData.get(3));
-            status.setText(courseData.get(4));
             mentorName.setText(courseData.get(5));
             mentorEmail.setText(courseData.get(6));
             mentorPhone.setText(courseData.get(7));
@@ -366,7 +375,7 @@ public class CourseAddActivity extends AppCompatActivity{
             public void onClick(DialogInterface dialogInterface, int i) {
 
                         Courses newCourse = new Courses(courseTitle.getText().toString(), courseStart.getText().toString(),
-                                courseEnd.getText().toString(), status.getText().toString(), mentorName.getText().toString(),
+                                courseEnd.getText().toString(), status.getSelectedItem().toString(), mentorName.getText().toString(),
                                 mentorEmail.getText().toString(), mentorPhone.getText().toString(), notes.getText().toString(),
                                 courseStart.getText().toString() + " - " + courseEnd.getText().toString());
                         saveCourse(newCourse);
@@ -600,12 +609,17 @@ public class CourseAddActivity extends AppCompatActivity{
         String title = courseTitle.getText().toString();
         String start = courseStart.getText().toString();
         String end = courseEnd.getText().toString();
-        String statusString = status.getText().toString();
+        String statusString = status.getSelectedItem().toString();
         String mentorN = mentorName.getText().toString();
         String mentorE = mentorEmail.getText().toString();
         String mentorP = mentorPhone.getText().toString();
         String notesTaken = notes.getText().toString();
         ArrayList<Assessment> allCurrentAssessmentsForCourse = new ArrayList<>();
+
+        for(int i : assessments){
+            allCurrentAssessmentsForCourse.add(getAssessmentFromSelected(i));
+        }
+
 
         if(assessments.isEmpty()){
             for(Integer i : assessments){
@@ -683,30 +697,44 @@ public class CourseAddActivity extends AppCompatActivity{
         long millisToStart = current.until(startDate, ChronoUnit.MILLIS);
         long millisToEnd = current.until(endDate, ChronoUnit.MILLIS);
 
+        int resourcedIdStart = (int) (c.getTimeInMillis() + millisToStart);
+        int resourceIdEnd = (int) (c.getTimeInMillis() + millisToEnd);
+
         SharedPreferences prefs = getSharedPreferences("Alarms", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-/*
-        if(millisToStart > 0){
-            Intent courseStartService = new Intent(getApplicationContext(), courseAssessmentStartEndNotifier.class);
-            courseStartService.putExtra("notificationType", "course");
-            courseStartService.putExtra("startOrEnd", "start");
-            courseStartService.putExtra("millsTillAlarm", millisToStart);
-            courseStartService.putExtra("Title", course.getCourseTitle());
-            bindService(courseStartService,connection,Context.BIND_AUTO_CREATE);
+
+       if(millisToStart > 0){
+            Intent courseStartService = new Intent(getApplicationContext(), NotificationReceiver.class);
+            courseStartService.putExtra("removeAlarm", course.getCourseTitle() + "-Start");
+            courseStartService.putExtra("title", "The course " + course.getCourseTitle() + " justStarted");
+            courseStartService.putExtra("requestCode", resourcedIdStart);
+
+           PendingIntent pendingIntent = PendingIntent.getBroadcast(this, resourcedIdStart, courseStartService,
+                   PendingIntent.FLAG_UPDATE_CURRENT);
+
             editor.putString(course.getCourseTitle() + "-Start", course.getCourseTitle() + " will fire an alarm at " +
                 course.getStartDate());
+
+           AlarmManager alarmManager = (AlarmManager) getBaseContext().getSystemService(Context.ALARM_SERVICE);
+           alarmManager.setExact(AlarmManager.RTC_WAKEUP, c.getTimeInMillis() + millisToStart, pendingIntent);
         }
 
         if(millisToEnd > 0){
-            Intent courseEndService = new Intent(getApplicationContext(), courseAssessmentStartEndNotifier.class);
-            courseEndService.putExtra("notificationType", "course");
-            courseEndService.putExtra("startOrEnd", "end");
-            courseEndService.putExtra("millsTillAlarm", millisToEnd);
-            courseEndService.putExtra("Title", course.getCourseTitle());
+            Intent courseEndService = new Intent(getApplicationContext(), NotificationReceiver.class);
+            courseEndService.putExtra("removeAlarm", course.getCourseTitle() + "-END");
+            courseEndService.putExtra("title", "The course " + course.getCourseTitle() + " just ended");
+            courseEndService.putExtra("requestCode", resourceIdEnd);
+
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(this, resourceIdEnd, courseEndService,
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+
             editor.putString(course.getCourseTitle() + "-END", course.getCourseTitle() + " will fire an alarm at " +
                 course.getAnticipatedEndDate());
-            startService(courseEndService);
-        }*/
+
+            AlarmManager alarmManager = (AlarmManager) getBaseContext().getSystemService(Context.ALARM_SERVICE);
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, c.getTimeInMillis() + millisToEnd, pendingIntent);
+
+        }
 
         editor.commit();
     }
@@ -780,18 +808,18 @@ public class CourseAddActivity extends AppCompatActivity{
     }
 
     public static class TimePicker extends DialogFragment
-            implements TimePickerDialog.OnTimeSetListener{
+            implements TimePickerDialog.OnTimeSetListener {
 
         public int hour;
         public int minute;
 
         @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState){
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
             final Calendar t = Calendar.getInstance();
             hour = t.get(Calendar.HOUR);
             minute = t.get(Calendar.MINUTE);
 
-            return new TimePickerDialog(getActivity(),this, hour, minute, true);
+            return new TimePickerDialog(getActivity(), this, hour, minute, true);
 
         }
 
@@ -801,36 +829,22 @@ public class CourseAddActivity extends AppCompatActivity{
             String hourString = String.valueOf(hourOfDay);
             String minuteString = String.valueOf(minute);
 
-            if(hourString.length() != 2){
+            if (hourString.length() != 2) {
                 hourString = "0".concat(hourString);
             }
 
-            if(minuteString.length() != 2){
+            if (minuteString.length() != 2) {
                 minuteString = "0".concat(minuteString);
             }
 
-            if(this.getArguments().containsKey("startDate")){
+            if (this.getArguments().containsKey("startDate")) {
                 courseStart.append("T" + hourString + ":" + minuteString + ":00");
-            }else if(this.getArguments().containsKey("endDate")){
+            } else if (this.getArguments().containsKey("endDate")) {
                 courseEnd.append("T" + hourString + ":" + minuteString + ":00");
             }
 
         }
     }
-
-    private ServiceConnection connection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            courseAssessmentStartEndNotifier.MyBinder b = (courseAssessmentStartEndNotifier.MyBinder) service;
-            s = b.getService();
-            //Toast.makeText(CourseAddActivity.this, "Notifier is On!", Toast.LENGTH_SHORT).show();
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            s = null;
-        }
-    };
 }
 
 

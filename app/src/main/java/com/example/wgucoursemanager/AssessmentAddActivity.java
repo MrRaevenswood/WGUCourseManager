@@ -348,15 +348,19 @@ public class AssessmentAddActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = prefs.edit();
 
         long millisToGoal = current.until(goalDate, ChronoUnit.MILLIS);
+        int resourceId = (int) (c.getTimeInMillis() + millisToGoal);
 
         if(millisToGoal > 0){
             Intent notifiyIntent = new Intent(getApplicationContext(), NotificationReceiver.class);
-            notifiyIntent.putExtra("title", assessment.getAssessmentTitle());
-            notifiyIntent.putExtra("timeTill", millisToGoal);
-            notifiyIntent.putExtra("notify", "assessment");
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, notifiyIntent,
+            notifiyIntent.putExtra("title","Assessment " + assessment.getAssessmentTitle() + " just reached its goal date");
+            notifiyIntent.putExtra("removeAlarm", assessment.getAssessmentTitle());
+            notifiyIntent.putExtra("requestCode", resourceId);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(this, resourceId, notifiyIntent,
                     PendingIntent.FLAG_UPDATE_CURRENT);
 
+
+            editor.putString(assessment.getAssessmentTitle(), "Assessment " + assessment.getAssessmentTitle() + " will fire at " +
+                assessment.getGoalDate());
 
             AlarmManager alarmManager = (AlarmManager) getBaseContext().getSystemService(Context.ALARM_SERVICE);
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, c.getTimeInMillis() + millisToGoal, pendingIntent);
